@@ -2,7 +2,7 @@ import { createId } from "@/lib/ids"
 import { DomainError } from "@/lib/result"
 import type { Inquiry, InquiryType, TravelDates } from "@/domain/entities"
 import { SOURCE_LABEL } from "@/domain/labels"
-import type { BudgetRange, ID, Interest } from "@/domain/types/common"
+import type { BudgetRange, ID, Interest, Source } from "@/domain/types/common"
 import type { UnitOfWork } from "@/repositories"
 import { logActivity } from "./activity-log"
 import { nextCode } from "./codes"
@@ -25,6 +25,13 @@ export interface WebsiteInquiryInput {
 
 /** Private, custom, and general requests from the website enter the pipeline as "Baru". */
 export function placeWebsiteInquiry(uow: UnitOfWork, input: WebsiteInquiryInput): { inquiryId: ID; code: string } {
+  return placeInquiry(uow, input, { source: "website" })
+}
+
+/** Website requests act as the customer; manual entries act as the team member. */
+export type InquiryChannel = { source: "website" } | { source: Exclude<Source, "website">; userId: ID }
+
+export function placeInquiry(uow: UnitOfWork, input: WebsiteInquiryInput, channel: InquiryChannel): { inquiryId: ID; code: string } {
   if (!Number.isInteger(input.groupSize) || input.groupSize < 1) {
     throw new DomainError("VALIDATION", "Jumlah peserta minimal 1 orang.", "groupSize")
   }
@@ -51,7 +58,7 @@ export function placeWebsiteInquiry(uow: UnitOfWork, input: WebsiteInquiryInput)
     throw new DomainError("VALIDATION", "Tuliskan pertanyaan Anda.", "message")
   }
 
-  const { customer } = resolveCustomer(uow, input.contact, "website")
+  const { customer } = resolveCustomer(uow, input.contact, channel.source)
   const inquiryId = createId("inq")
   const code = nextCode(uow, "inquiry")
   const inquiry: Inquiry = {
@@ -60,7 +67,7 @@ export function placeWebsiteInquiry(uow: UnitOfWork, input: WebsiteInquiryInput)
     type: input.type,
     customerId: customer.id,
     contactSnapshot: { fullName: input.contact.fullName.trim(), phone: customer.phone, email: customer.email },
-    source: "website",
+    source: channel.source,
     packageId: pkg?.id,
     destinationIds,
     travelDates: input.travelDates,
@@ -70,17 +77,18 @@ export function placeWebsiteInquiry(uow: UnitOfWork, input: WebsiteInquiryInput)
     interests: input.interests ?? [],
     message: input.message?.trim() || undefined,
     stage: "new",
+    assigneeId: channel.source === "website" ? undefined : channel.userId,
     followUps: [],
     createdAt: uow.now,
     updatedAt: uow.now,
   }
   uow.inquiries.insert(inquiry)
   logActivity(uow, {
-    actor: { kind: "customer", customerId: customer.id },
+    actor: channel.source === "website" ? { kind: "customer", customerId: customer.id } : { kind: "user", userId: channel.userId },
     subject: { type: "inquiry", id: inquiryId },
     related: [{ type: "customer", id: customer.id }],
     action: "inquiry.created",
-    message: `Inquiry ${code} masuk dari ${SOURCE_LABEL.website}: ${inquiry.contactSnapshot.fullName}, ${input.groupSize} orang`,
+    message: `Inquiry ${code} masuk dari ${SOURCE_LABEL[channel.source]}: ${inquiry.contactSnapshot.fullName}, ${input.groupSize} orang`,
   })
   return { inquiryId, code }
 }

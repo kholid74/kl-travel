@@ -49,7 +49,7 @@ const eslintConfig = defineConfig([
   },
   {
     // Tests may build seed data directly.
-    files: ["src/app/**/*.test.ts", "src/components/**/*.test.ts", "src/features/**/*.test.ts"],
+    files: ["src/app/**/*.test.ts", "src/components/**/*.test.ts", "src/features/**/*.test.ts", "src/domain/**/*.test.ts"],
     rules: { "no-restricted-imports": "off" },
   },
   {

@@ -1,4 +1,5 @@
 import type { BookingStatus } from "@/domain/entities"
+import type { CustomerStage } from "@/domain/rules/customer-identity"
 import type { PaymentStatus } from "@/domain/rules/payment-status"
 import type { Tone } from "@/components/shared/status-badge"
 
@@ -8,6 +9,12 @@ export const BOOKING_STATUS_TONE: Record<BookingStatus, Tone> = {
   confirmed: "success",
   completed: "neutral",
   cancelled: "danger",
+}
+
+export const CUSTOMER_STAGE_TONE: Record<CustomerStage, Tone> = {
+  prospect: "neutral",
+  customer: "info",
+  repeat: "success",
 }
 
 export const PAYMENT_STATUS_TONE: Record<PaymentStatus, Tone> = {

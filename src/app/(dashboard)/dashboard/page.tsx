@@ -1,14 +1,11 @@
-import { DataHealth } from "@/features/demo/components/data-health"
+import { Suspense } from "react"
+import { PageSkeleton } from "@/components/dashboard/page-skeleton"
+import { OverviewPage } from "@/features/overview/components/overview-page"
 
-/** Phase 1: verifies the data layer end to end. Replaced by the real overview in Phase 3. */
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-page-title font-semibold text-text-strong">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Ringkasan data demo yang hidup di browser ini.</p>
-      </div>
-      <DataHealth />
-    </div>
+    <Suspense fallback={<PageSkeleton variant="overview" />}>
+      <OverviewPage />
+    </Suspense>
   )
 }

@@ -76,16 +76,22 @@ Status: ☑ selesai · ☐ belum. Setiap phase diakhiri dengan `npm run typechec
 - Tautan "Lihat di dashboard" dari halaman konfirmasi dan langkah 4–7 di `/demo` menuju route dashboard yang dibangun di Phase 3–4
 - Phase 6: ukuran payload awal per halaman (HTML 22–35 KB gzip setelah katalog ringkas) dan LCP hero
 
-## Phase 3 — Dashboard inti
+## Phase 3 — Dashboard inti ☑
 
-- ☐ Overview: 6 KPI + periode, 7 widget operasional, semuanya dari data
-- ☐ Paket: daftar, buat/edit (itinerary builder, media picker, harga open/tiered, kebijakan), publish/unpublish/arsip, departure terkait
-- ☐ Destinasi: daftar, buat/edit, status
-- ☐ Keberangkatan: kalender + daftar, buat/edit, ubah kapasitas dengan batas bawah, tutup penjualan, batalkan, manifest, guide (cek bentrok)
-- ☐ Booking: daftar + filter, booking manual, detail lengkap, verifikasi, perpanjang hold, lengkapi traveler, simulasi pembatalan, selesaikan, timeline
-- ☐ Inquiry: kanban (drag + keyboard) dan tabel, detail, follow-up, penanggung jawab, quotation builder dengan versi, won/lost, konversi ke booking
-- ☐ Customer: daftar + pencarian, profil, riwayat booking & inquiry, catatan, tahap
-- ☐ PermissionGate per persona
+- ☑ Overview: 6 KPI dengan periode 7/30/90 hari dan pembanding periode sebelumnya, 7 widget (follow-up, keberangkatan 30 hari dengan kesiapan, pembayaran jatuh tempo, data peserta belum lengkap, aktivitas terbaru, tren booking 12 minggu, paket terpopuler), semuanya dari `domain/rules/metrics.ts` (teruji)
+- ☑ Paket: daftar + filter, editor bertab (Dasar, Itinerary builder dengan urutan hari, Fasilitas & syarat, Galeri dari katalog foto, Harga open/tiered + DP + kebijakan pembatalan + FAQ), publish/jadikan draf/arsip dengan daftar syarat publikasi, keberangkatan terkait
+- ☑ Destinasi: daftar + filter, editor (kategori, deskripsi, sorotan, foto), publish/draf (tidak bisa jadi draf selama masih ada paket terbit)
+- ☑ Keberangkatan: tabel + kalender bulanan, jadwal baru (salin template biaya + checklist), kapasitas dengan batas bawah terisi + ditahan, peserta minimum, tutup/buka penjualan dengan alasan, batalkan (booking aktif ikut batal tanpa biaya), guide dengan cek bentrok, daftar booking, manifest, estimasi laba kotor
+- ☑ Booking: tab status + filter (pembayaran, jenis, sumber, keberangkatan) di URL, booking manual (deteksi pelanggan lama, opsi langsung terbitkan invoice), detail (perjalanan, peserta, pembayaran & termin, timeline, pelanggan, hold), verifikasi + invoice, perpanjang hold (maks. 2×), lengkapi data peserta, simulasi pembatalan dengan biaya dan refund, tandai selesai
+- ☑ Inquiry: papan kanban (drag mouse/sentuh + menu "Pindahkan ke…" untuk keyboard) dan tabel, inquiry manual, detail (kebutuhan, penawaran berversi, follow-up, penanggung jawab, jadwal follow-up, riwayat), penyusun penawaran (draf/kirim, revisi = versi baru), respons pelanggan, Gagal dengan alasan, konversi ke booking (private, custom → paket unlisted, general → jadwal open trip)
+- ☑ Pelanggan: daftar + pencarian (nama, telepon, email) + filter tahap/sumber, profil (riwayat booking & inquiry, catatan, edit kontak dengan cek duplikat)
+- ☑ Izin per persona: dicek di service (`requirePermission`) dan di UI (`PermissionButton` nonaktif + tooltip alasan)
+- ☑ 126 test (service admin, metrik, filter, alur website); `next build` 81 halaman
+- ☑ Diverifikasi di Chrome headless: alur inquiry → penawaran → konversi; paket baru → publish → jadwal → tampil di website (#9–11); ubah kapasitas → sisa kursi di website berubah (#12–13); drag kanban termasuk penolakan pindah tahap; persona Content tidak bisa memverifikasi atau membatalkan booking; tampilan 390 px tanpa scroll horizontal
+
+**Catatan untuk phase berikutnya**
+- Pencatatan dan verifikasi pembayaran, refund, serta halaman invoice ada di Phase 4. Detail booking sudah menampilkan pembayaran dan mengarahkan ke modul Pembayaran.
+- Tautan KPI "Estimasi profitabilitas" ke HPP & Costing ditambahkan di Phase 4.
 
 ## Phase 4 — Operasional & keuangan
 

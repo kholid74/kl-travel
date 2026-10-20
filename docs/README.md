@@ -14,4 +14,4 @@ Showcase website travel dan dashboard operasional untuk operator travel fiktif *
 | [implementation-checklist.md](implementation-checklist.md) | Checklist per phase, 20 interaksi wajib, 15 kriteria penerimaan |
 | [adr/](adr/) | Keputusan arsitektur yang sulit dibalik |
 
-Status: **Phase 0–2 selesai.** Berikutnya Phase 3 (dashboard inti). Detail di [implementation-checklist.md](implementation-checklist.md).
+Status: **Phase 0–3 selesai.** Berikutnya Phase 4 (operasional & keuangan). Detail di [implementation-checklist.md](implementation-checklist.md).

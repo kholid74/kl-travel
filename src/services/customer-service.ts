@@ -3,9 +3,12 @@ import { normalizeEmail, normalizePhone } from "@/lib/phone"
 import { DomainError } from "@/lib/result"
 import type { Customer } from "@/domain/entities"
 import { findCustomerMatch } from "@/domain/rules/customer-identity"
-import type { Source } from "@/domain/types/common"
+import type { ID, Source } from "@/domain/types/common"
 import type { UnitOfWork } from "@/repositories"
+import { logActivity } from "./activity-log"
+import { requirePermission, userActor } from "./authz"
 import { nextCode } from "./codes"
+import { runCommand } from "./runtime"
 
 export interface ContactInput {
   fullName: string
@@ -13,6 +16,51 @@ export interface ContactInput {
   email?: string
   city?: string
   preferredContact?: Customer["preferredContact"]
+}
+
+export function addCustomerNote(uow: UnitOfWork, userId: ID, customerId: ID, body: string): Customer {
+  requirePermission(uow, userId, "inquiries.manage")
+  const customer = uow.customers.require(customerId)
+  if (!body.trim()) throw new DomainError("VALIDATION", "Tuliskan catatan.", "body")
+  const updated = uow.customers.update(customer.id, {
+    notes: [...customer.notes, { id: createId("note"), body: body.trim(), authorId: userId, createdAt: uow.now }],
+    updatedAt: uow.now,
+  })
+  logActivity(uow, { actor: userActor(userId), subject: { type: "customer", id: customer.id }, action: "customer.note_added", message: `Catatan ditambahkan untuk ${customer.fullName}` })
+  return updated
+}
+
+/** Contact details stay unique across customers (invariant 9). */
+export function updateCustomer(
+  uow: UnitOfWork,
+  userId: ID,
+  customerId: ID,
+  input: { fullName: string; phone: string; email: string; city: string; preferredContact: Customer["preferredContact"] },
+): Customer {
+  requirePermission(uow, userId, "inquiries.manage")
+  const customer = uow.customers.require(customerId)
+  const phone = normalizePhone(input.phone)
+  if (!phone) throw new DomainError("VALIDATION", "Nomor telepon tidak valid.", "phone")
+  const email = input.email.trim() ? normalizeEmail(input.email) : null
+  if (input.email.trim() && !email) throw new DomainError("VALIDATION", "Alamat email tidak valid.", "email")
+  if (input.fullName.trim().length < 3) throw new DomainError("VALIDATION", "Isi nama lengkap.", "fullName")
+  if (uow.customers.find((c) => c.id !== customer.id && c.phone === phone).length) throw new DomainError("CONFLICT", "Nomor ini sudah dipakai pelanggan lain.", "phone")
+  if (email && uow.customers.find((c) => c.id !== customer.id && c.email === email).length) throw new DomainError("CONFLICT", "Email ini sudah dipakai pelanggan lain.", "email")
+  const updated = uow.customers.update(customer.id, {
+    fullName: input.fullName.trim(),
+    phone,
+    email: email ?? undefined,
+    city: input.city.trim() || undefined,
+    preferredContact: input.preferredContact,
+    updatedAt: uow.now,
+  })
+  logActivity(uow, { actor: userActor(userId), subject: { type: "customer", id: customer.id }, action: "customer.updated", message: `Data kontak ${updated.fullName} diperbarui` })
+  return updated
+}
+
+export const customerCommands = {
+  addNote: (userId: ID, customerId: ID, body: string) => runCommand((uow) => addCustomerNote(uow, userId, customerId, body)),
+  update: (userId: ID, customerId: ID, input: Parameters<typeof updateCustomer>[3]) => runCommand((uow) => updateCustomer(uow, userId, customerId, input)),
 }
 
 /** Author id for notes written by the system rather than a team member. */

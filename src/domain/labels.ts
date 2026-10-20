@@ -7,11 +7,15 @@ import type {
   BookingStatus,
   CancellationReason,
   FitnessLevel,
+  FollowUp,
   InquiryType,
   LostReason,
+  PackageStatus,
   PaymentMethod,
+  Permission,
   PipelineStage,
 } from "./entities"
+import type { CustomerStage } from "./rules/customer-identity"
 import type { DepartureDisplayStatus } from "./rules/availability"
 import type { QuotationDisplayStatus } from "./rules/inquiry-pipeline"
 import type { PaymentStatus } from "./rules/payment-status"
@@ -136,6 +140,43 @@ export const INTEREST_LABEL: Record<Interest, string> = {
   honeymoon: "Bulan madu",
   keluarga: "Keluarga",
   petualangan: "Petualangan",
+}
+
+/** Phrased to complete "tidak memiliki izin untuk …". */
+export const PERMISSION_LABEL: Record<Permission, string> = {
+  "inquiries.manage": "mengelola inquiry",
+  "bookings.manage": "mengelola booking",
+  "bookings.cancel": "membatalkan booking",
+  "payments.record": "mencatat pembayaran",
+  "payments.verify": "memverifikasi pembayaran",
+  "packages.manage": "mengelola paket",
+  "packages.publish": "memublikasikan paket",
+  "departures.manage": "mengelola keberangkatan",
+  "operations.manage": "mengelola operasional trip",
+  "costing.manage": "mengelola HPP",
+  "content.manage": "mengelola konten website",
+  "reports.view": "melihat laporan",
+  "team.manage": "mengelola tim",
+  "settings.manage": "mengubah pengaturan",
+}
+
+export const FOLLOW_UP_CHANNEL_LABEL: Record<FollowUp["channel"], string> = {
+  whatsapp: "WhatsApp",
+  telepon: "Telepon",
+  email: "Email",
+  meeting: "Meeting",
+}
+
+export const PACKAGE_STATUS_LABEL: Record<PackageStatus, string> = {
+  draft: "Draf",
+  published: "Terbit",
+  archived: "Diarsipkan",
+}
+
+export const CUSTOMER_STAGE_LABEL: Record<CustomerStage, string> = {
+  prospect: "Prospek",
+  customer: "Pelanggan",
+  repeat: "Repeat",
 }
 
 export const ARTICLE_CATEGORY_LABEL: Record<Article["category"], string> = {

@@ -3,13 +3,14 @@ import { formatDate, formatIDR } from "@/lib/format"
 import { createId } from "@/lib/ids"
 import { normalizePhone } from "@/lib/phone"
 import { DomainError } from "@/lib/result"
-import type { Booking, PaymentMethod, Traveler } from "@/domain/entities"
+import type { Booking, Customer, PaymentMethod, Traveler } from "@/domain/entities"
 import { getIndexes } from "@/domain/indexes"
+import { SOURCE_LABEL } from "@/domain/labels"
 import { departureDisplayStatus, isBookable, seatSummary } from "@/domain/rules/availability"
 import { paymentGuard } from "@/domain/rules/booking-lifecycle"
 import { bookingFinancials } from "@/domain/rules/payment-status"
 import { pricePerPax } from "@/domain/rules/pricing"
-import type { ID } from "@/domain/types/common"
+import type { ID, Source } from "@/domain/types/common"
 import { PROOF_ILLUSTRATION_ID } from "@/data/seed/build-seed"
 import type { UnitOfWork } from "@/repositories"
 import { logActivity } from "./activity-log"
@@ -35,17 +36,55 @@ export interface WebsiteBookingInput {
   specialRequests?: string
 }
 
+/** Where a booking came from: the website (customer acts) or a team member entering it. */
+export type BookingChannel = { source: "website" } | { source: Exclude<Source, "website">; userId: ID }
+
+/** One traveler record per seat, as in the seed; details left empty count as incomplete. */
+export function createTravelers(
+  uow: UnitOfWork,
+  customer: Customer,
+  travelers: TravelerInput[],
+  options: { contactTravels: boolean; emergencyContact?: { name: string; phone: string } },
+): ID[] {
+  const emergencyPhone = options.emergencyContact?.phone ? normalizePhone(options.emergencyContact.phone) : null
+  const emergencyContact =
+    options.emergencyContact?.name.trim() && emergencyPhone ? { name: options.emergencyContact.name.trim(), phone: emergencyPhone } : undefined
+  return travelers.map((entry, index) => {
+    const self = options.contactTravels && index === 0
+    const traveler: Traveler = {
+      id: createId("trv"),
+      customerId: customer.id,
+      isCustomerSelf: self,
+      fullName: entry.fullName.trim() || undefined,
+      gender: entry.gender,
+      dateOfBirth: entry.dateOfBirth,
+      phone: self ? customer.phone : undefined,
+      emergencyContact,
+      createdAt: uow.now,
+      updatedAt: uow.now,
+    }
+    return uow.travelers.insert(traveler).id
+  })
+}
+
 /**
  * Open Trip booking from the website (docs/domain-model.md §6.3). Seats are checked
  * against the latest stored data inside the transaction, so two tabs cannot overbook.
  */
 export function placeWebsiteBooking(uow: UnitOfWork, input: WebsiteBookingInput): { bookingId: ID; code: string } {
+  return placeOpenTripBooking(uow, input, { source: "website" })
+}
+
+/** Shared by website and manual bookings: validates seats, then creates a pending booking. */
+export function placeOpenTripBooking(uow: UnitOfWork, input: WebsiteBookingInput, channel: BookingChannel): { bookingId: ID; code: string } {
   const pax = input.travelers.length
   const settings = uow.settings.get().booking
   if (pax < 1) throw new DomainError("VALIDATION", "Tambahkan minimal satu peserta.", "travelers")
 
   const pkg = uow.packages.get(input.packageId)
-  if (!pkg || pkg.status !== "published" || pkg.visibility !== "catalog" || pkg.tripType !== "open") {
+  const sellable =
+    pkg?.tripType === "open" && (channel.source === "website" ? pkg.status === "published" && pkg.visibility === "catalog" : pkg.status !== "archived")
+  if (!pkg || !sellable) {
     throw new DomainError("NOT_FOUND", "Paket ini tidak lagi tersedia untuk dipesan.")
   }
   const departure = uow.departures.get(input.departureId)
@@ -71,30 +110,10 @@ export function placeWebsiteBooking(uow: UnitOfWork, input: WebsiteBookingInput)
     throw new DomainError("SEATS_UNAVAILABLE", `Sisa kursi untuk keberangkatan ini tinggal ${seats.available}.`, "travelers")
   }
 
-  const { customer } = resolveCustomer(uow, input.contact, "website")
-  const emergencyPhone = input.emergencyContact?.phone ? normalizePhone(input.emergencyContact.phone) : null
-  const emergencyContact =
-    input.emergencyContact?.name.trim() && emergencyPhone ? { name: input.emergencyContact.name.trim(), phone: emergencyPhone } : undefined
-
+  const { customer } = resolveCustomer(uow, input.contact, channel.source)
   const bookingId = createId("bk")
   const code = nextCode(uow, "booking")
-  // One traveler record per seat, as in the seed; details left empty count as incomplete.
-  const travelerIds = input.travelers.map((entry, index) => {
-    const self = input.contactTravels && index === 0
-    const traveler: Traveler = {
-      id: createId("trv"),
-      customerId: customer.id,
-      isCustomerSelf: self,
-      fullName: entry.fullName.trim() || undefined,
-      gender: entry.gender,
-      dateOfBirth: entry.dateOfBirth,
-      phone: self ? customer.phone : undefined,
-      emergencyContact,
-      createdAt: uow.now,
-      updatedAt: uow.now,
-    }
-    return uow.travelers.insert(traveler).id
-  })
+  const travelerIds = createTravelers(uow, customer, input.travelers, input)
 
   const unitPrice = pricePerPax(pkg, pax, departure) ?? 0
   const booking: Booking = {
@@ -104,7 +123,7 @@ export function placeWebsiteBooking(uow: UnitOfWork, input: WebsiteBookingInput)
     packageId: pkg.id,
     departureId: departure.id,
     tripType: pkg.tripType,
-    source: "website",
+    source: channel.source,
     status: "pending",
     lines: [{ id: createId("pl"), label: `${pkg.title} · ${formatDate(departure.startDate)}`, quantity: pax, unitPrice }],
     discount: 0,
@@ -119,14 +138,17 @@ export function placeWebsiteBooking(uow: UnitOfWork, input: WebsiteBookingInput)
   })
 
   logActivity(uow, {
-    actor: { kind: "customer", customerId: customer.id },
+    actor: channel.source === "website" ? { kind: "customer", customerId: customer.id } : { kind: "user", userId: channel.userId },
     subject: { type: "booking", id: bookingId },
     related: [
       { type: "departure", id: departure.id },
       { type: "customer", id: customer.id },
     ],
     action: "booking.created",
-    message: `Booking ${code} masuk dari website untuk ${pkg.title} (${pax} pax)`,
+    message:
+      channel.source === "website"
+        ? `Booking ${code} masuk dari website untuk ${pkg.title} (${pax} pax)`
+        : `Booking ${code} dicatat dari ${SOURCE_LABEL[channel.source]} untuk ${pkg.title} (${pax} pax)`,
   })
   return { bookingId, code }
 }

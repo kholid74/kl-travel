@@ -83,7 +83,15 @@ Catatan Phase 2:
 
 - `motion` 13.5.1 (bukan 14.0.0 yang baru berumur 18 hari dan berganti versi mayor) dan `react-day-picker` 9.14.0 (v9 stabil; v10 baru keluar). Kalender memakai locale `id` dari `date-fns`, Senin sebagai awal minggu.
 - `tailwind-merge` diberi tahu skala tipografi kustom (`text-display-*`, `text-heading`, dll.). Tanpa itu, `cn()` menganggapnya warna dan membuangnya saat bertemu `text-ocean-900`.
-- `next/image`: prop `priority` sudah deprecated di Next 16 dan diganti `preload`. React 19 juga otomatis mem-preload gambar yang tidak `lazy` saat render server, sehingga galeri memakai satu set elemen untuk semua breakpoint (strip geser di mobile, grid di desktop) agar hanya satu foto yang di-preload.
+- `next/image`: prop `priority` sudah deprecated di Next 16 dan diganti `preload`.
+
+Catatan Phase 3:
+
+- Dependency baru: `@dnd-kit/core` 6.3.1 (kanban), `recharts` 3.10.1 (tren booking, dimuat dengan `next/dynamic` agar hanya halaman yang memakainya yang memuat), dan `react-is` 19.3.0 karena Recharts membutuhkan versi yang sama dengan React (yang terpasang sebelumnya hanya v16 dari tooling lint).
+- Otorisasi persona ada di service: setiap perintah dashboard menerima `userId` persona dan memanggil `requirePermission()` di dalam transaksi. UI memakai `usePersona()` dan `PermissionButton` hanya untuk menonaktifkan tombol dengan tooltip alasan.
+- Perintah dari UI lewat `useCommand()`: status pending, toast sukses/gagal, dan `Result` yang tetap bisa dipetakan ke field form.
+- Sheet dan dialog dirender di portal, tetapi event React tetap merambat ke form di luarnya. Form di dalam sheet menghentikan perambatan `submit`, dan `PermissionButton` default `type="button"` agar tidak men-submit form editor secara tidak sengaja.
+- Halaman detail dashboard (`[id]`) tidak punya `generateStaticParams`; ID dibaca dengan `useParams()` di dalam `<Suspense>` dan data diambil dari database browser. React 19 juga otomatis mem-preload gambar yang tidak `lazy` saat render server, sehingga galeri memakai satu set elemen untuk semua breakpoint (strip geser di mobile, grid di desktop) agar hanya satu foto yang di-preload.
 
 ## 4. Lapisan aplikasi
 

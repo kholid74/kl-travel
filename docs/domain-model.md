@@ -654,6 +654,8 @@ Syarat: tahap `won` dan belum pernah dikonversi.
 | `custom` | Private Departure baru | paket `custom` baru (`unlisted`) dari quotation | `awaiting_payment` + invoice |
 | `general` | Scheduled Departure yang dipilih admin (cek `available`) | paket departure tersebut | `awaiting_payment` + invoice |
 
+Mencatat penawaran sebagai **disetujui** otomatis memindahkan inquiry ke tahap Berhasil dan menandai versi lain yang masih terbuka sebagai ditolak. Paket custom yang dibuat saat konversi memakai kode `NV-CUS-nnnn`, status terbit, dan visibilitas `unlisted`.
+
 Baris harga booking diambil dari quotation yang disetujui, atau dari harga departure untuk `general`. Booking menyimpan `inquiryId` dan `quotationId`, inquiry menyimpan `convertedBookingId`, dan customer yang dipakai adalah `inquiry.customerId`. Konversi tidak pernah membuat customer baru.
 
 ### 6.8 Identitas customer (dedupe)
