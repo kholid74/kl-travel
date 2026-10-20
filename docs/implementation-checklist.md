@@ -93,13 +93,24 @@ Status: ☑ selesai · ☐ belum. Setiap phase diakhiri dengan `npm run typechec
 - Pencatatan dan verifikasi pembayaran, refund, serta halaman invoice ada di Phase 4. Detail booking sudah menampilkan pembayaran dan mengarahkan ke modul Pembayaran.
 - Tautan KPI "Estimasi profitabilitas" ke HPP & Costing ditambahkan di Phase 4.
 
-## Phase 4 — Operasional & keuangan
+## Phase 4 — Operasional & keuangan ☑
 
-- ☐ Pembayaran: antrean verifikasi, verifikasi/tolak, catat pembayaran manual, refund, label simulasi
-- ☐ Invoice: daftar, detail, cetak A4 (`/print/invoices/[id]`)
-- ☐ Operasional trip: papan kesiapan, checklist dengan dependensi, guide, vendor, manifest + cetak
-- ☐ HPP & Costing: simulator interaktif, estimasi vs realisasi, titik impas, grafik (validasi warna dengan skill `dataviz`)
-- ☐ Laporan: 7 laporan, filter periode, ringkasan teks + tabel alternatif
+- ☑ Pembayaran: KPI (menunggu verifikasi, diterima 30 hari, sisa tagihan, refund tertunda), tab Perlu verifikasi · Semua · Refund. Tinjau dengan ilustrasi bukti transfer bertanda CONTOH dan dampak verifikasi ditampilkan sebelum dikonfirmasi; tolak wajib alasan; catat pembayaran manual (langsung terverifikasi bila persona punya izin verifikasi, selain itu masuk antrean); refund bertahap dibatasi sisa refund kebijakan. Verifikasi yang menutup termin pertama otomatis mengonfirmasi booking. Label "Simulasi" di judul, dialog, dan catatan
+- ☑ Invoice: daftar dengan filter status dan jatuh tempo berikutnya, detail (dokumen invoice, status per termin, semua pembayaran termasuk yang ditolak), cetak A4 di `/print/invoices/[id]` memakai komponen dokumen yang sama
+- ☑ Operasional trip: papan per status kesiapan dengan flag Perlu perhatian dan filter rentang; detail dengan checklist berdependensi (item terkunci menampilkan alasan, item yang syaratnya hilang ditandai "perlu dicek ulang", membuka ulang verifikasi peserta ikut membuka manifest), catatan per item, guide dengan cek bentrok, vendor (minta → konfirmasi/batal), manifest + cetak di `/print/manifest/[departureId]`, catatan operasional
+- ☑ HPP & Costing: simulator (slider peserta, harga jual, harga tingkat grup untuk paket private), 7 angka (HPP, HPP/pax, pendapatan, laba kotor, margin, markup, titik impas), grafik pendapatan vs HPP dengan titik impas dan grafik komposisi biaya, editor komponen biaya yang bisa disimpan sebagai estimasi (keberangkatan atau template paket), panel estimasi vs realisasi dengan input biaya aktual, tabel semua keberangkatan dengan "Belum dapat dihitung" beserta alasannya
+- ☑ Laporan: 7 laporan (tren booking, penjualan per paket, destinasi populer, konversi inquiry, okupansi, umur tagihan, estimasi vs realisasi profit), filter 30 hari / 90 hari / tahun ini / rentang khusus, ringkasan teks dan tabel alternatif di setiap grafik
+- ☑ Warna grafik divalidasi dengan validator `dataviz` (palet referensi; warna brand gagal ambang chroma). Grafik Overview dua sumbu-Y diganti satu sumbu
+- ☑ Tautan: KPI Estimasi profitabilitas → HPP & Costing; detail booking → catat pembayaran dan invoice; detail keberangkatan → operasional dan HPP
+- ☑ 141 test (15 baru untuk pembayaran, operasional, costing, laporan); `next build` 90 halaman
+- ☑ Diverifikasi di Chrome headless: verifikasi pembayaran website → booking terkonfirmasi; catat DP manual dari detail booking → Terkonfirmasi + Dibayar sebagian (#7–8); refund mengurangi antrean; tugaskan guide dan konfirmasi vendor membuka item checklist; simulator 6 pax menghitung rugi dan titik impas 9 pax; persona Sales tidak bisa memverifikasi; cetak invoice dan manifest; 1440 dan 390 px tanpa scroll horizontal dan tanpa error konsol
+
+**Perubahan aturan di Phase 4**
+- Booking hanya bisa ditandai Selesai bila checklist operasional trip lengkap (invarian 13 kini dijaga service, bukan hanya seed)
+- Item "Verifikasi data peserta" butuh minimal satu peserta terkonfirmasi; konteks checklist dihitung oleh `checklistContext()`
+
+**Catatan untuk phase berikutnya**
+- Template biaya paket diedit dari HPP & Costing (pilih "Template biaya paket"); editor paket belum punya tab Template biaya sendiri
 
 ## Phase 5 — Konten & integrasi demo
 

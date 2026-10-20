@@ -677,7 +677,7 @@ Checklist dibuat saat departure dibuat. Item `accommodation` dihilangkan untuk t
 |---|---|---|
 | `transport` | Konfirmasi transportasi | ada vendor `transportasi` atau `kapal` berstatus `confirmed` |
 | `accommodation` | Konfirmasi akomodasi | ada vendor `akomodasi` atau `kapal` berstatus `confirmed` |
-| `traveler_data` | Verifikasi data peserta | semua traveler di booking terkonfirmasi lengkap |
+| `traveler_data` | Verifikasi data peserta | ada ≥ 1 traveler di booking terkonfirmasi dan semuanya lengkap |
 | `itinerary` | Siapkan itinerary final | — |
 | `guide` | Konfirmasi guide | `departure.guideId` terisi |
 | `briefing` | Kirim briefing ke peserta (simulasi) | — |
@@ -687,6 +687,10 @@ Checklist dibuat saat departure dibuat. Item `accommodation` dihilangkan untuk t
 Traveler lengkap = `fullName`, `gender`, `dateOfBirth`, dan `emergencyContact` terisi.
 
 Guide tidak boleh ditugaskan ke dua departure tidak batal yang rentang tanggalnya tumpang tindih.
+
+Syarat hanya dicek saat item dicentang. Bila syaratnya hilang setelah itu (vendor dibatalkan, peserta baru dengan data kosong), item tetap tercentang dan ditandai **Perlu dicek ulang**. Membuka kembali `traveler_data` ikut membuka `manifest`. Booking hanya bisa ditandai `completed` bila checklist departure-nya lengkap (invarian 13).
+
+Vendor: `requested → confirmed | cancelled`, `confirmed → cancelled`. Layanan penugasan mengikuti kategori vendor. Satu vendor tidak bisa punya dua penugasan aktif di departure yang sama.
 
 Kesiapan trip (dievaluasi berurutan): `cancelled` → `completed` (today > endDate) → `in_progress` (start ≤ today ≤ end) → `ready` (semua item selesai) → `preparing` (≥ 1 item selesai) → `not_started`. Flag **Perlu perhatian** muncul jika (a) berangkat ≤ 7 hari lagi dan progres < 75%, atau (b) Scheduled Departure berangkat ≤ 45 hari lagi tetapi belum `guaranteed`, yaitu saat operator perlu memutuskan jalan atau batal.
 
@@ -715,6 +719,14 @@ Contoh uji (Sailing Komodo 3H2M): F = Rp18.500.000, v = Rp1.150.000, p = Rp3.450
 | **Laba kotor realisasi** | pax booking `completed` | Σ total booking completed + biaya pembatalan yang ditahan | Σ `actualAmount` | hanya departure selesai **dengan semua biaya aktual terisi**; selain itu tampil "Belum dapat dihitung" |
 
 Semua angka laba adalah laba kotor sebelum overhead dan pajak. UI selalu memberi label Estimasi atau Realisasi dan tidak pernah menampilkan keduanya tanpa label.
+
+Biaya pembatalan yang ditahan = `paidIn − refundAmount` per booking batal (uang yang tetap di perusahaan setelah refund selesai). Realisasi juga menunggu semua booking `confirmed` di departure tersebut ditandai selesai. Alasan "Belum dapat dihitung" ditampilkan: trip belum selesai, booking belum ditutup, belum ada komponen biaya, atau biaya aktual baru *n* dari *m* komponen. Biaya aktual hanya bisa dicatat setelah `startDate`.
+
+### 6.11 Pembayaran tercatat
+
+Pembayaran dicatat tim lewat modul Pembayaran atau detail booking. Persona dengan `payments.verify` mencatatnya langsung `verified`; persona dengan hanya `payments.record` membuat `pending_verification`. Nominal maksimal `outstanding − pendingVerificationAmount`, sehingga uang yang sama tidak bisa dilaporkan dua kali. Tanggal bayar tidak boleh di masa depan. Verifikasi payment masuk ditolak bila booking sudah batal atau nominal melebihi `outstanding`. Penolakan wajib alasan. Refund selalu `transfer_bank`, langsung `verified`, dan boleh dicicil sampai `refundRemaining` habis.
+
+Sisa per termin untuk invoice dan laporan umur tagihan memakai urutan yang sama dengan §6.5: uang terverifikasi mengisi termin menurut tanggal jatuh tempo (`installmentCoverage()`).
 
 ## 7. Metrik dashboard
 

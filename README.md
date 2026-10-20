@@ -2,7 +2,7 @@
 
 Showcase website travel dan dashboard operasional untuk operator perjalanan fiktif **NusaVista Journey**, dibuat oleh Kalsara Digital Studio. Seluruh data hidup di browser pengunjung; tidak ada backend, pembayaran, atau pengiriman pesan sungguhan.
 
-> Status: fondasi (Phase 1), website publik (Phase 2), dan dashboard inti (Phase 3) selesai. Rencana dan progres lengkap ada di [`docs/`](docs/README.md).
+> Status: fondasi (Phase 1), website publik (Phase 2), dashboard inti (Phase 3), serta operasional & keuangan (Phase 4) selesai. Rencana dan progres lengkap ada di [`docs/`](docs/README.md).
 
 ## Menjalankan
 

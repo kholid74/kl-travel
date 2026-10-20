@@ -8,7 +8,7 @@ import type { Booking, Departure, Inquiry, Installment, TourPackage } from "../e
 import { getIndexes } from "../indexes"
 import type { ID, IDR } from "../types/common"
 import { seatSummary } from "./availability"
-import { costTotals, profitAt } from "./costing"
+import { costTotals, profitAt, realizedCost } from "./costing"
 import { bookingFinancials } from "./payment-status"
 import { priceTotal } from "./pricing"
 import { isTravelerComplete } from "./travelers"
@@ -60,6 +60,61 @@ export function departureEstimate(db: DemoDatabase, departure: Departure): Depar
   const totals = costTotals(idx.costItemsByDeparture.get(departure.id) ?? [])
   const cost = pax > 0 ? profitAt({ ...totals, pricePerPax: 0, participants: pax }).hpp : 0
   return { departure, pax, revenue, cost, profit: revenue - cost }
+}
+
+export interface DepartureRealized {
+  /** Travelers on completed bookings. */
+  pax: number
+  /** Completed booking totals plus cancellation money the company keeps. */
+  revenue: IDR
+  retained: IDR
+  actualCost: IDR
+  costLines: number
+  filledLines: number
+  /** Null until the figure can be computed; see `pendingReason`. */
+  profit: IDR | null
+  margin: number | null
+  pendingReason: string | null
+}
+
+/**
+ * Realised gross profit (§6.10). Only computed for a finished trip whose bookings are closed
+ * and whose every cost line has an actual amount; otherwise it says why not.
+ */
+export function departureRealized(db: DemoDatabase, departure: Departure, today: DateOnly): DepartureRealized {
+  const idx = getIndexes(db)
+  const bookings = idx.bookingsByDeparture.get(departure.id) ?? []
+  const completed = bookings.filter((b) => b.status === "completed")
+  let retained = 0
+  for (const booking of bookings) {
+    if (booking.status !== "cancelled") continue
+    const fin = bookingFinancials({ booking, invoice: idx.invoiceByBooking.get(booking.id), payments: idx.paymentsByBooking.get(booking.id) ?? [], today })
+    retained += Math.max(0, fin.paidIn - fin.refundDue)
+  }
+  const lines = idx.costItemsByDeparture.get(departure.id) ?? []
+  const actual = realizedCost(lines)
+  const revenue = completed.reduce((sum, b) => sum + priceTotal(b), 0) + retained
+  const open = bookings.filter((b) => b.status === "confirmed").length
+
+  let pendingReason: string | null = null
+  if (departure.cancelledAt) pendingReason = "Keberangkatan dibatalkan"
+  else if (today <= departure.endDate) pendingReason = "Trip belum selesai"
+  else if (open > 0) pendingReason = `${open} booking belum ditandai selesai`
+  else if (lines.length === 0) pendingReason = "Belum ada komponen biaya"
+  else if (!actual.complete) pendingReason = `Biaya aktual baru ${lines.filter((l) => l.actualAmount !== undefined).length} dari ${lines.length} komponen`
+
+  const profit = pendingReason ? null : revenue - actual.total
+  return {
+    pax: completed.reduce((sum, b) => sum + idx.paxOf(b.id), 0),
+    revenue,
+    retained,
+    actualCost: actual.total,
+    costLines: lines.length,
+    filledLines: lines.filter((l) => l.actualAmount !== undefined).length,
+    profit,
+    margin: profit !== null && revenue > 0 ? profit / revenue : null,
+    pendingReason,
+  }
 }
 
 export interface OverviewKpis {

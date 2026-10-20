@@ -284,10 +284,13 @@ describe("trip readiness", () => {
   })
 
   it("enforces checklist dependencies", () => {
-    const ctx = { guideAssigned: false, confirmedVendorServices: new Set<never>(), allTravelersComplete: false, hasActiveHolds: true, travelerDataDone: false }
+    const ctx = { guideAssigned: false, confirmedVendorServices: new Set<never>(), confirmedPax: 3, incompleteTravelers: 1, hasActiveHolds: true, travelerDataDone: false }
     expect(checklistBlocker("guide", ctx)).not.toBeNull()
     expect(checklistBlocker("manifest", ctx)).not.toBeNull()
     expect(checklistBlocker("itinerary", ctx)).toBeNull()
+    expect(checklistBlocker("traveler_data", ctx)).toBe("1 peserta belum lengkap datanya.")
+    expect(checklistBlocker("traveler_data", { ...ctx, confirmedPax: 0, incompleteTravelers: 0 })).toBe("Belum ada peserta terkonfirmasi.")
+    expect(checklistBlocker("transport", { ...ctx, confirmedVendorServices: new Set(["kapal"] as const) })).toBeNull()
   })
 
   it("flags risk near departure and below minimum", () => {

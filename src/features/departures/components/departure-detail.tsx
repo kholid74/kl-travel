@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useMemo, useState } from "react"
-import { Ban, ExternalLink, Lock, LockOpen, Save } from "lucide-react"
+import { Ban, Calculator, ClipboardCheck, ExternalLink, Lock, LockOpen, Save } from "lucide-react"
 import { diffDays, rangesOverlap } from "@/lib/dates"
 import { formatDateRange, formatDateTime, formatIDR, formatNumber, formatPercent, formatPhone } from "@/lib/format"
 import { getIndexes } from "@/domain/indexes"
@@ -256,6 +256,15 @@ function DepartureDetail({ id }: { id: string }) {
           <SectionCard
             title={`Manifest (${manifest.length} peserta)`}
             description={incomplete > 0 ? `${incomplete} peserta belum lengkap. Termasuk booking yang belum terkonfirmasi.` : "Data semua peserta lengkap."}
+            action={
+              !departure.cancelledAt && (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/dashboard/operations/${departure.id}`}>
+                    <ClipboardCheck aria-hidden="true" /> Operasional trip
+                  </Link>
+                </Button>
+              )
+            }
             bodyClassName="p-0"
           >
             {manifest.length === 0 ? (
@@ -374,6 +383,9 @@ function DepartureDetail({ id }: { id: string }) {
               </div>
             </dl>
             <p className="mt-3 text-xs text-muted-foreground">Dari template biaya keberangkatan dan booking terkonfirmasi, sebelum overhead dan pajak.</p>
+            <Link href={`/dashboard/costing?departure=${departure.id}`} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-lagoon-700 hover:underline">
+              <Calculator className="size-3.5" aria-hidden="true" /> Buka di HPP & Costing
+            </Link>
           </SectionCard>
         </aside>
       </div>

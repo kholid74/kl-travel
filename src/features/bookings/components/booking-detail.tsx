@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useMemo, useState } from "react"
-import { BadgeCheck, CalendarClock, CheckCheck, ExternalLink, XCircle } from "lucide-react"
+import { BadgeCheck, CalendarClock, CheckCheck, ExternalLink, Plus, XCircle } from "lucide-react"
 import { addHours, diffDays, hoursBetween, toDateOnlyWIB } from "@/lib/dates"
 import { formatDate, formatDateRange, formatDateTime, formatIDR, formatPhone, formatRemaining } from "@/lib/format"
 import { getIndexes } from "@/domain/indexes"
@@ -15,7 +15,7 @@ import {
   PAYMENT_STATUS_LABEL,
   SOURCE_LABEL,
 } from "@/domain/labels"
-import { approveGuard, cancelGuard, completeGuard, extendHoldGuard, MAX_HOLD_EXTENSIONS } from "@/domain/rules/booking-lifecycle"
+import { approveGuard, cancelGuard, completeGuard, extendHoldGuard, MAX_HOLD_EXTENSIONS, paymentGuard } from "@/domain/rules/booking-lifecycle"
 import { customerStage } from "@/domain/rules/customer-identity"
 import { buildInstallments } from "@/domain/rules/invoice-schedule"
 import { bookingFinancials } from "@/domain/rules/payment-status"
@@ -32,6 +32,7 @@ import { DescriptionList, SectionCard } from "@/components/dashboard/section-car
 import { StatusBadge, TripTypeBadge } from "@/components/shared/status-badge"
 import { Button } from "@/components/ui/button"
 import { bookingCommands } from "@/services/booking-admin-service"
+import { RecordPaymentDialog } from "@/features/payments/components/record-payment-dialog"
 import { BOOKING_STATUS_TONE, CUSTOMER_STAGE_TONE, PAYMENT_STATUS_TONE } from "../labels"
 import { CancelBookingDialog } from "./cancel-booking-dialog"
 import { TravelerEditor } from "./traveler-editor"
@@ -46,6 +47,7 @@ function BookingDetail({ id }: { id: string }) {
   const live = useLive()
   const { user } = usePersona()
   const [dialog, setDialog] = useState<"approve" | "cancel" | "complete" | null>(null)
+  const [recording, setRecording] = useState(false)
   const userId = user?.id ?? ""
 
   const approve = useCommand(bookingCommands.approve, { success: (r) => `Invoice ${r.number} diterbitkan`, onSuccess: () => setDialog(null) })
@@ -75,6 +77,7 @@ function BookingDetail({ id }: { id: string }) {
       fin: bookingFinancials({ booking, invoice, payments, today }),
       events: idx.activityBySubject.get(booking.id) ?? [],
       stage: customerStage(idx.bookingsByCustomer.get(booking.customerId) ?? []),
+      checklistComplete: !!idx.checklistByDeparture.get(booking.departureId)?.items.every((item) => item.done),
     }
   }, [live, id])
 
@@ -94,14 +97,17 @@ function BookingDetail({ id }: { id: string }) {
   }
 
   const { db, now, today } = live
-  const { booking, customer, pkg, departure, inquiry, travelers, invoice, payments, fin, events, stage } = view
+  const { booking, customer, pkg, departure, inquiry, travelers, invoice, payments, fin, events, stage, checklistComplete } = view
   const pax = travelers.length
   const incomplete = travelers.filter((t) => missingTravelerFields(t).length > 0).length
   const holdHours = booking.holdExpiresAt ? hoursBetween(now, booking.holdExpiresAt) : 0
   const approveBlock = approveGuard(booking) ?? (holdHours <= 0 ? "Batas waktu verifikasi sudah lewat." : null)
   const extendBlock = extendHoldGuard(booking)
   const cancelBlock = cancelGuard(booking)
-  const completeBlock = departure ? completeGuard({ booking, departure, financials: fin, today }) : "Keberangkatan tidak ditemukan."
+  const completeBlock = departure ? completeGuard({ booking, departure, financials: fin, checklistComplete, today }) : "Keberangkatan tidak ditemukan."
+  const paymentBlock =
+    paymentGuard(booking) ??
+    (fin.outstanding === 0 ? "Booking sudah lunas." : fin.outstanding - fin.pendingVerificationAmount <= 0 ? "Sisa tagihan sedang menunggu verifikasi." : null)
   const preview =
     booking.status === "pending" && pkg && departure
       ? buildInstallments({
@@ -268,7 +274,26 @@ function BookingDetail({ id }: { id: string }) {
 
           <SectionCard
             title="Pembayaran"
-            description={invoice ? `Invoice ${invoice.number}${invoice.voidedAt ? " (dibatalkan)" : ""} · diterbitkan ${formatDate(toDateOnlyWIB(invoice.issuedAt))}` : "Invoice terbit setelah booking diverifikasi."}
+            description={
+              invoice ? (
+                <>
+                  Invoice{" "}
+                  <Link href={`/dashboard/invoices/${invoice.id}`} className="font-medium text-text-strong hover:underline">
+                    {invoice.number}
+                  </Link>
+                  {invoice.voidedAt ? " (dibatalkan)" : ""} · diterbitkan {formatDate(toDateOnlyWIB(invoice.issuedAt))}
+                </>
+              ) : (
+                "Invoice terbit setelah booking diverifikasi."
+              )
+            }
+            action={
+              booking.status === "cancelled" ? undefined : (
+                <PermissionButton permission="payments.record" size="sm" variant="secondary" disabledReason={paymentBlock} onClick={() => setRecording(true)}>
+                  <Plus aria-hidden="true" /> Catat pembayaran
+                </PermissionButton>
+              )
+            }
           >
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {[
@@ -332,7 +357,13 @@ function BookingDetail({ id }: { id: string }) {
                 ))}
               </ul>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">Verifikasi dan pencatatan pembayaran dilakukan tim finance di modul Pembayaran.</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {booking.status === "cancelled" && fin.refundRemaining > 0 ? "Refund dicatat tim finance di " : "Pembayaran yang dilaporkan pelanggan diverifikasi tim finance di "}
+              <Link href={booking.status === "cancelled" ? "/dashboard/payments?tab=refund" : "/dashboard/payments"} className="font-semibold text-lagoon-700 hover:underline">
+                modul Pembayaran
+              </Link>
+              . Semua pembayaran di showcase ini adalah simulasi.
+            </p>
           </SectionCard>
 
           <SectionCard title="Timeline">
@@ -454,6 +485,8 @@ function BookingDetail({ id }: { id: string }) {
         pending={complete.pending}
         onConfirm={() => complete.run(userId, booking.id)}
       />
+
+      <RecordPaymentDialog open={recording} onOpenChange={setRecording} bookingId={booking.id} />
 
       {pkg && departure && (
         <CancelBookingDialog

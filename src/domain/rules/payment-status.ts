@@ -33,6 +33,27 @@ export interface BookingFinancials {
   refundRemaining: IDR
 }
 
+export interface InstallmentCoverage {
+  installment: Installment
+  paid: IDR
+  remaining: IDR
+  status: "paid" | "partial" | "unpaid" | "overdue"
+}
+
+/** Verified money fills installments in due-date order (the same order as §6.5). */
+export function installmentCoverage(installments: readonly Installment[], paidNet: IDR, today: DateOnly): InstallmentCoverage[] {
+  let before = 0
+  return [...installments]
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .map((installment) => {
+      const paid = Math.min(installment.amount, Math.max(0, paidNet - before))
+      before += installment.amount
+      const remaining = installment.amount - paid
+      const status = remaining === 0 ? "paid" : installment.dueDate < today ? "overdue" : paid > 0 ? "partial" : "unpaid"
+      return { installment, paid, remaining, status }
+    })
+}
+
 /** Always derived, never stored (ADR-0002). See docs/domain-model.md §6.5. */
 export function bookingFinancials(input: {
   booking: Pick<Booking, "status" | "lines" | "discount" | "cancellation">

@@ -170,6 +170,7 @@ export function OverviewPage() {
               ? `Belum ada peserta terkonfirmasi untuk ${PROFIT_WINDOW_DAYS} hari ke depan.`
               : `Laba kotor ${kpis.profitability.departures} keberangkatan dalam ${PROFIT_WINDOW_DAYS} hari · margin ${formatPercent(kpis.profitability.margin)}`
           }
+          href="/dashboard/costing"
         />
       </div>
 
@@ -177,9 +178,16 @@ export function OverviewPage() {
         <SectionCard
           className="xl:col-span-8"
           title="Tren booking"
-          description="12 minggu terakhir: jumlah booking (batang) dan nilai yang sudah terkonfirmasi (garis)."
+          description="Jumlah booking per minggu, 12 minggu terakhir. Booking yang dibatalkan tidak dihitung."
+          action={
+            <Link href="/dashboard/reports" className="text-xs font-semibold text-lagoon-700 hover:underline">
+              Laporan lengkap
+            </Link>
+          }
         >
-          <TrendChart points={data.trend} />
+          <div aria-hidden="true">
+            <TrendChart points={data.trend} />
+          </div>
           <p className="mt-3 text-sm text-muted-foreground">
             {trendTotal} booking dalam 12 minggu, nilai terkonfirmasi {formatIDR(trendValue)}. Minggu ini {data.trend.at(-1)?.bookings ?? 0} booking.
           </p>

@@ -6,14 +6,18 @@ import type {
   Article,
   BookingStatus,
   CancellationReason,
+  CostCategory,
   FitnessLevel,
   FollowUp,
   InquiryType,
   LostReason,
   PackageStatus,
   PaymentMethod,
+  PaymentRecordStatus,
   Permission,
   PipelineStage,
+  VendorAssignment,
+  VendorCategory,
 } from "./entities"
 import type { CustomerStage } from "./rules/customer-identity"
 import type { DepartureDisplayStatus } from "./rules/availability"
@@ -118,6 +122,39 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   qris: "QRIS",
   kartu_kredit: "Kartu kredit",
   tunai: "Tunai",
+}
+
+export const PAYMENT_RECORD_STATUS_LABEL: Record<PaymentRecordStatus, string> = {
+  pending_verification: "Menunggu verifikasi",
+  verified: "Terverifikasi",
+  rejected: "Ditolak",
+}
+
+export const COST_CATEGORY_LABEL: Record<CostCategory, string> = {
+  transport: "Transportasi",
+  accommodation: "Akomodasi",
+  meals: "Konsumsi",
+  guide: "Guide",
+  tickets: "Tiket masuk",
+  activities: "Aktivitas",
+  documentation: "Dokumentasi",
+  other: "Operasional lain",
+}
+
+export const VENDOR_CATEGORY_LABEL: Record<VendorCategory, string> = {
+  transportasi: "Transportasi",
+  kapal: "Kapal",
+  akomodasi: "Akomodasi",
+  restoran: "Restoran",
+  aktivitas: "Aktivitas",
+  tiket: "Tiket",
+  dokumentasi: "Dokumentasi",
+}
+
+export const VENDOR_ASSIGNMENT_STATUS_LABEL: Record<VendorAssignment["status"], string> = {
+  requested: "Diminta",
+  confirmed: "Terkonfirmasi",
+  cancelled: "Dibatalkan",
 }
 
 export const READINESS_LABEL: Record<ReadinessStatus, string> = {

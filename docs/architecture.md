@@ -93,6 +93,13 @@ Catatan Phase 3:
 - Sheet dan dialog dirender di portal, tetapi event React tetap merambat ke form di luarnya. Form di dalam sheet menghentikan perambatan `submit`, dan `PermissionButton` default `type="button"` agar tidak men-submit form editor secara tidak sengaja.
 - Halaman detail dashboard (`[id]`) tidak punya `generateStaticParams`; ID dibaca dengan `useParams()` di dalam `<Suspense>` dan data diambil dari database browser. React 19 juga otomatis mem-preload gambar yang tidak `lazy` saat render server, sehingga galeri memakai satu set elemen untuk semua breakpoint (strip geser di mobile, grid di desktop) agar hanya satu foto yang di-preload.
 
+Catatan Phase 4:
+
+- Service baru: `payment-service` (verifikasi, tolak, catat manual, refund), `operations-service` (checklist dan vendor), `costing-service` (komponen biaya dan biaya aktual). Read model baru di `services/queries/`: `payments`, `invoices`, `operations`, `costing`. Laporan dihitung di `domain/rules/reports.ts`, laba realisasi di `departureRealized()` (`domain/rules/metrics.ts`).
+- Layout cetak `app/print` tanpa chrome. Dokumen invoice dan manifest adalah komponen yang sama dengan tampilan dashboard (`InvoiceDocument`, `ManifestTable`), sehingga angka di layar dan di kertas tidak bisa berbeda. Ukuran A4 dan margin dari aturan `@page` di `globals.css`.
+- Warna grafik divalidasi dengan validator skill `dataviz` terhadap permukaan kartu `#ffffff`. Warna brand (teal, navy, pasir) gagal ambang chroma 0,10 pada ukuran grafik, jadi data memakai palet referensi yang lolos semua cek (`components/dashboard/charts/chart-theme.ts`): kategori biru/oranye/aqua, ramp ordinal biru untuk funnel, skala status untuk umur tagihan. Elemen kerangka (grid, teks sumbu) tetap memakai token dashboard. Setiap grafik punya ringkasan teks dan tabel alternatif (`ChartFrame`). Grafik tren di Overview yang sebelumnya memakai dua sumbu-Y diubah menjadi satu sumbu.
+- `next build` dan `next dev` yang berjalan bersamaan pada direktori yang sama membuat worker dev server crash (modul usang, redirect berulang). Hentikan dev server sebelum build.
+
 ## 4. Lapisan aplikasi
 
 ```text

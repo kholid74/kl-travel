@@ -87,7 +87,14 @@ export function completeBooking(uow: UnitOfWork, userId: ID, bookingId: ID) {
   requirePermission(uow, userId, "bookings.manage")
   const booking = uow.bookings.require(bookingId)
   const departure = uow.departures.require(booking.departureId)
-  const guard = completeGuard({ booking, departure, financials: financialsOf(uow, booking), today: toDateOnlyWIB(uow.now) })
+  const checklist = uow.checklists.find((c) => c.departureId === departure.id)[0]
+  const guard = completeGuard({
+    booking,
+    departure,
+    financials: financialsOf(uow, booking),
+    checklistComplete: !!checklist && checklist.items.every((item) => item.done),
+    today: toDateOnlyWIB(uow.now),
+  })
   if (guard) throw new DomainError("INVALID_TRANSITION", guard)
   uow.bookings.update(booking.id, { status: "completed", completedAt: uow.now, updatedAt: uow.now })
   logActivity(uow, {

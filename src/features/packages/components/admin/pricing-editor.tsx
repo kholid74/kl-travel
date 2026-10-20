@@ -2,8 +2,8 @@
 
 import { Controller, useFieldArray, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form"
 import { Plus, Trash2 } from "lucide-react"
-import { formatNumber } from "@/lib/format"
 import { Field } from "@/components/shared/field"
+import { MoneyInput as RupiahInput } from "@/components/shared/money-input"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { PackageFormValues } from "../../admin-schema"
@@ -13,19 +13,7 @@ function MoneyInput({ control, name, label }: { control: Control<PackageFormValu
     <Controller
       control={control}
       name={name}
-      render={({ field }) => (
-        <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">Rp</span>
-          <Input
-            aria-label={label}
-            inputMode="numeric"
-            className="pl-9 tabular-nums"
-            value={field.value ? formatNumber(field.value) : ""}
-            onChange={(e) => field.onChange(Number(e.target.value.replace(/\D/g, "")) || 0)}
-            onBlur={field.onBlur}
-          />
-        </div>
-      )}
+      render={({ field }) => <RupiahInput aria-label={label} value={field.value} onChange={field.onChange} onBlur={field.onBlur} />}
     />
   )
 }

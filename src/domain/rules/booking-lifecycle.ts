@@ -48,11 +48,14 @@ export function completeGuard(input: {
   booking: Pick<Booking, "status">
   departure: Pick<Departure, "endDate">
   financials: Pick<BookingFinancials, "status">
+  /** Invariant 13: a finished trip is closed only after its operations checklist is complete. */
+  checklistComplete: boolean
   today: DateOnly
 }): Guard {
   if (input.booking.status !== "confirmed") return "Hanya booking terkonfirmasi yang bisa diselesaikan."
   if (input.today <= input.departure.endDate) return "Trip belum berakhir."
   if (input.financials.status !== "paid") return "Booking belum lunas."
+  if (!input.checklistComplete) return "Checklist operasional trip belum lengkap."
   return null
 }
 
