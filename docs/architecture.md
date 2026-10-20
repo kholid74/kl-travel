@@ -1,0 +1,244 @@
+# Arsitektur
+
+## 1. Ringkasan produk
+
+**NusaVista Journey** adalah operator travel Indonesia fiktif yang dipakai Kalsara Digital Studio untuk mendemokan website travel dan sistem operasional dalam satu produk. Pengunjung showcase (calon klien Kalsara) dapat menjelajah sendiri kedua sisi dan melihat bahwa aksi di satu sisi langsung terlihat di sisi lain.
+
+| Sisi | Pengguna dalam cerita | Tujuan |
+|---|---|---|
+| Website publik | Calon wisatawan | Menemukan destinasi, membandingkan paket, booking Open Trip, mengajukan Private/Custom Trip |
+| Dashboard operasional | Owner, Sales, Operasional, Finance, Content | Mengelola inquiry, booking, pembayaran, keberangkatan, operasional trip, HPP, konten, laporan |
+| Lapisan demo | Calon klien Kalsara | Panduan perjalanan demo, indikator Demo Mode, reset data, penanda aksi simulasi |
+
+Alur lintas modul yang harus terasa nyata:
+
+```mermaid
+flowchart LR
+  subgraph Publik
+    A[Cari & filter paket] --> B[Pilih keberangkatan]
+    B --> C[Booking Open Trip]
+    A --> D[Ajukan Private / Custom Trip]
+    C --> E[Konfirmasi + 'Saya sudah transfer']
+  end
+  subgraph Dashboard
+    C --> F[Booking: Menunggu Verifikasi]
+    F --> G[Verifikasi → Invoice terbit]
+    E --> H[Payment menunggu verifikasi]
+    G --> H --> I[DP terverifikasi → Terkonfirmasi]
+    I --> J[Keberangkatan: kursi & manifest]
+    J --> K[Operasional trip → Selesai]
+    D --> L[Inquiry pipeline]
+    L --> M[Quotation → Won]
+    M --> N[Konversi → Booking + Private Departure]
+    N --> G
+    O[Konten Website & Paket] -->|publish| A
+  end
+  I & K & L --> P[KPI & Laporan]
+```
+
+## 2. Keputusan yang sudah diambil
+
+| Topik | Keputusan |
+|---|---|
+| Bahasa | Seluruh UI dan konten dalam Bahasa Indonesia (EYD). Kode dan identifier dalam bahasa Inggris. Istilah industri yang lazim tetap dipakai: Open Trip, Private Trip, booking, invoice, DP, guide. |
+| URL | Website publik memakai slug Indonesia (`/paket`, `/destinasi`). Dashboard di bawah `/dashboard/…` dengan segmen Inggris yang sama dengan nama modul. Detail di [route-map.md](route-map.md). |
+| Foto | Foto Unsplash untuk tahap awal, diunduh dan dioptimasi ke `public/images` (tidak hotlink), dengan kredit fotografer di katalog media dan halaman kredit foto. Setiap foto diverifikasi menampilkan destinasi yang benar. |
+| Persistensi | `localStorage` di balik interface repository ([ADR-0001](adr/0001-browser-local-repository-behind-interfaces.md)). |
+| State turunan | Sisa kursi, status pembayaran, KPI dihitung, tidak disimpan ([ADR-0002](adr/0002-derived-state-over-stored-counters.md)). |
+| Render | Konten statis dirender server, data hidup di client island ([ADR-0003](adr/0003-render-static-content-then-hydrate-live-data.md)). |
+| Jenis trip | Siklus berbeda per jenis trip, bertemu di Departure ([ADR-0004](adr/0004-separate-lifecycles-per-trip-type.md)). |
+| Package manager | npm (satu-satunya yang tersedia di mesin pengembangan). |
+| Indeks mesin pencari | Seluruh situs `noindex`, karena brand fiktif tidak boleh muncul di hasil pencarian sebagai agen travel sungguhan. |
+
+## 3. Stack dan kebijakan dependency
+
+| Paket | Fungsi | Alasan masuk |
+|---|---|---|
+| `next`, `react`, `react-dom` | App Router, RSC, `next/image`, `next/font` | Stack yang diminta, kompatibel dengan Vercel |
+| `typescript` (strict) | Tipe | Wajib. 5.9.3, sesuai template `create-next-app` 16.4; TypeScript 7 (native) belum dipakai |
+| `tailwindcss` v4 | Styling dan token | Token didefinisikan di CSS (`@theme`) |
+| `shadcn` (CLI) + Radix | Primitif UI aksesibel (dialog, sheet, popover, select, tabs, dropdown) | Kode komponen disalin ke repo dan dikustomisasi; bukan tampilan default |
+| `lucide-react` | Ikon | Diminta |
+| `motion` | Animasi halus di website publik | Diminta. Dipakai lewat `LazyMotion` agar bundle kecil |
+| `recharts` | Grafik dashboard dan laporan | Diminta |
+| `react-hook-form`, `zod`, `@hookform/resolvers` | Form dan validasi | Diminta. Skema Zod dipakai ulang oleh service |
+| `zustand` | Store snapshot database dan preferensi UI | Ringan, mendukung selector dan `useSyncExternalStore` |
+| `date-fns` | Aritmetika tanggal dan locale `id` | Diminta |
+| `react-day-picker` | Kalender pemilih tanggal (komponen Calendar shadcn) | Pemilihan tanggal Private/Custom Trip dan form dashboard |
+| `sonner` | Toast | Standar shadcn |
+| `@dnd-kit/core` | Drag-and-drop kanban inquiry | Mendukung keyboard dan sentuhan; HTML5 DnD tidak |
+| `vitest` (dev) | Unit test aturan domain dan invarian seed | Kebenaran angka keuangan dan kursi wajib teruji |
+
+Tidak dipakai, dengan sengaja: TanStack Table (tabel ≤ 100 baris cukup dengan komponen sendiri), TanStack Query (belum ada server; seam disiapkan di hook), immer, library i18n (satu bahasa), library ID atau zona waktu (WIB = UTC+7 tetap).
+
+Kebijakan versi: versi dikunci persis (tanpa `^`) pada rilis yang sudah berumur minimal 14 hari saat dipasang. `engines.node` diset `>=20.9` mengikuti Next.js; Vercel memakai Node LTS default.
+
+Catatan Phase 1:
+
+- Next.js 16.4.0 dengan **Cache Components** dan **Partial Prefetching** aktif (default template). Tailwind dimuat lewat loader `@tailwindcss/turbopack`, bukan PostCSS.
+- `shadcn init` menambahkan paket `cn` (0.x, rilis terbaru 4 hari) dan paket CLI `shadcn` sebagai dependency. Keduanya dihapus: `cn()` memakai `clsx` + `tailwind-merge`, dan bagian `shadcn/tailwind.css` yang dibutuhkan disalin ke `src/app/shadcn-base.css`.
+- `npm audit` produksi: 0 kerentanan. Lima temuan `high` hanya di tooling dev (`eslint-config-next` → `braces`).
+
+## 4. Lapisan aplikasi
+
+```text
+app/ + components/            UI: halaman, layout, komponen presentasi
+        │ hanya memanggil
+        ▼
+features/*/hooks              useXxx() → { data, status, error } · useXxxAction() → { run, isPending }
+        │
+        ├──► read models       services/queries/*  — fungsi murni atas snapshot database
+        ▼
+services/*                    use case: validasi, aturan domain, transaksi, ActivityEvent
+        │ bergantung pada interface
+        ▼
+repositories/interfaces       DataSource + UnitOfWork (repository per agregat dalam satu transaksi)
+        ▼
+repositories/mock             implementasi localStorage → LocalDatabase → StorageAdapter
+
+domain/                       tipe entitas + aturan murni (kursi, pembayaran, transisi, HPP, KPI)
+                              boleh diimpor semua lapisan; tidak mengimpor React, storage, atau Next
+```
+
+Aturan import (ditegakkan dengan `no-restricted-imports` di ESLint):
+
+- `app/`, `components/`, dan `features/*/components` tidak boleh mengimpor `repositories/mock`, `data/fixtures` (kecuali halaman server publik melalui `services/catalog-server`), atau memanggil `localStorage`.
+- `domain/` tidak boleh mengimpor apa pun di luar `domain/` dan `lib/` yang murni.
+- Service mendapatkan repository dari composition root `repositories/index.ts` (`getDataSource()`), bukan dengan mengimpor implementasi mock langsung.
+
+**Seam untuk backend nanti:** hook fitur mengembalikan bentuk `{ data, status, error }` sejak awal, sehingga komponen sudah menangani loading dan error. Saat API tersedia, implementasi hook diganti ke query cache di atas repository API, service berpindah ke server, dan komponen tidak berubah.
+
+## 5. Data layer
+
+### 5.1 Dokumen database
+
+```ts
+interface DemoDatabase {
+  meta: {
+    schemaVersion: number;       // naik saat bentuk data berubah → wajib migrasi
+    seedVersion: string;         // naik saat isi seed berubah → tawarkan reset
+    seedAnchor: DateOnly;        // tanggal acuan seed
+    seededAt: Timestamp;
+    counters: Record<string, number>;   // nomor urut kode manusia (booking, invoice, …)
+  };
+  destinations: Record<ID, Destination>;
+  packages: Record<ID, TourPackage>;
+  departures: Record<ID, Departure>;
+  // … satu Record per entitas di domain-model.md
+  siteContent: SiteContent;
+  settings: Settings;
+}
+```
+
+- Key storage: `nusavista-demo:db` (dokumen) dan `nusavista-demo:ui` (preferensi UI per pengunjung).
+- Perkiraan ukuran: 300–600 KB, jauh di bawah kuota sekitar 5 MB.
+- Jika localStorage tidak tersedia (mode privat, kuota penuh), `MemoryStorageAdapter` dipakai dan banner memberi tahu bahwa perubahan hilang setelah refresh.
+
+### 5.2 Transaksi
+
+```text
+service.action(input)                         async, dipanggil hook fitur
+  → runCommand(work)                          services/runtime.ts
+      1. jeda latensi simulasi (dan kegagalan simulasi bila diaktifkan)
+      2. DataSource.transaction((uow) => …)   sinkron
+           a. baca dokumen terbaru dari storage (bukan cache tab)
+           b. jalankan aturan domain pada salinan kerja (structuredClone)
+           c. tulis ke storage; validateDatabase() saat development
+      3. publish snapshot baru → db-store → UI render ulang
+  → hasil: { ok: true, data } | { ok: false, error: DomainError }
+```
+
+Transaksi sengaja sinkron. Unit of work bekerja pada salinan dokumen di memori, sehingga atomik tanpa kunci, dan error di tengah transaksi tidak menulis apa pun. Latensi dan kegagalan simulasi ada di `runCommand`, bukan di repository.
+
+`DomainError` memiliki `code` (`SEATS_UNAVAILABLE`, `INVALID_TRANSITION`, `VALIDATION`, `NOT_FOUND`, `PERMISSION_DENIED`, `STORAGE_UNAVAILABLE`, `SIMULATED_FAILURE`) dan `message` bahasa Indonesia yang siap ditampilkan.
+
+### 5.3 Sinkronisasi antartab
+
+Event `storage` dari tab lain memuat ulang snapshot dan menaikkan versinya. Karena setiap transaksi membaca dokumen terbaru sebelum menulis, website dan dashboard di dua tab tetap konsisten tanpa saling menimpa.
+
+### 5.4 Seed, versi, migrasi, reset
+
+- `buildSeed(anchor: DateOnly)` membangun dataset deterministik: skenario yang ditulis tangan ditambah data pengisi dari PRNG ber-seed tetap. Rencana isinya ada di [seed-data.md](seed-data.md).
+- Saat load: tidak ada dokumen → seed baru. `schemaVersion` lebih lama → jalankan migrasi berurutan. Dokumen rusak atau versi tidak dikenal → seed baru + toast pemberitahuan.
+- `seedVersion` berbeda → banner "Data demo versi baru tersedia" dengan tombol reset.
+- Seed Anchor lebih tua dari 14 hari → banner "Tanggal data demo sudah lama" dengan tombol reset.
+- Reset (dari dashboard Settings, halaman `/demo`, atau panel demo) menghapus dokumen dan membangun seed dengan anchor hari ini, setelah konfirmasi.
+
+### 5.5 Waktu, ID, dan kode
+
+- `clock.now()` adalah satu-satunya sumber waktu. `today()` dihitung dalam WIB (UTC+7, tanpa DST) sebagai `DateOnly`.
+- ID runtime: prefiks + 10 karakter acak dari `crypto.getRandomValues`.
+- Kode manusia memakai counter di `meta.counters`: `NV-2610-0143` (booking), `INV/NV/2026/10/0042` (invoice), `PAY-2610-0088`, `INQ-0187`, `QUO-0187-v2`, `CUS-0042`.
+
+### 5.6 System Job
+
+`runSystemJobs(now)` berjalan saat hydration dan setiap 60 detik selama tab terlihat. Job ini idempoten:
+
+1. Membatalkan booking `pending`/`awaiting_payment` dengan hold kedaluwarsa (`hold_expired`).
+2. Menyelesaikan booking `confirmed` yang departure-nya sudah berakhir dan sudah lunas.
+
+Setiap perubahan dicatat sebagai ActivityEvent dengan actor "Sistem".
+
+### 5.7 Latensi dan kegagalan simulasi
+
+- Mutasi diberi jeda 300–700 ms agar state loading dan tombol pending terlihat realistis. Pembacaan tidak diberi jeda.
+- Pengaturan Demo di dashboard menyediakan dua toggle: "Jaringan lambat" (jeda 2–3 detik) dan "Gagalkan penyimpanan berikutnya" untuk mendemokan state error dan tombol coba lagi.
+
+## 6. Strategi render
+
+| Area | Server | Client |
+|---|---|---|
+| Website publik | Layout, hero, editorial, deskripsi destinasi/paket, artikel, metadata halaman (dari fixture seed melalui `services/catalog-server`) | Daftar keberangkatan, sisa kursi, filter/sort, paket buatan dashboard, Site Content yang diedit, semua form |
+| Dashboard | Shell layout (sidebar, topbar) | Seluruh data, dengan skeleton saat hydration |
+| Cetak invoice | Shell tanpa chrome | Data invoice |
+
+Aturan anti hydration error:
+
+- Jalur render server tidak memanggil `new Date()`, `Math.random()`, `toLocaleString`, atau `Intl`. Format rupiah (`Rp3.450.000`) dan tanggal (`4 Nov 2026`) memakai formatter deterministik di `lib/format`.
+- Nilai yang bergantung waktu ("3 hari lagi", "sisa 2 kursi") hanya dirender setelah mount, dengan placeholder berukuran sama agar tidak ada layout shift.
+- Island menerima `initialData` dari server dan memakainya pada render pertama, lalu berpindah ke data store setelah store terhidrasi.
+
+Statis vs dinamis: halaman publik untuk slug seed dibangun statis (`generateStaticParams`). Dengan Cache Components, slug di luar daftar itu (paket buatan dashboard) dirender saat request. Opsi `dynamicParams` tidak tersedia dalam mode ini. Client component yang memakai `usePathname`/`useSearchParams` dibungkus `<Suspense>`. Halaman detail dashboard (`[id]`) tidak membutuhkan data di server.
+
+Lingkup tema: `ThemeScope` memberi class `.theme-public` / `.theme-dashboard` pada subtree. Konten portal (dialog, menu, tooltip) dibungkus `ThemeScopeContents` (elemen `display: contents`), sehingga mewarisi token yang sama meskipun dirender di `<body>`.
+
+## 7. State di client
+
+| Store | Isi | Persistensi |
+|---|---|---|
+| `db-store` | Snapshot `DemoDatabase`, `version`, `status: 'hydrating' \| 'ready' \| 'unavailable'` | Dikelola LocalDatabase (`nusavista-demo:db`) |
+| `ui-store` | Sidebar terlipat, persona aktif, progres panduan demo yang ditutup, view terakhir (tabel/kanban/kalender) | `nusavista-demo:ui`, dibungkus try/catch |
+
+Selector turunan (sisa kursi, status pembayaran, KPI) di-memo per `version` snapshot.
+
+## 8. Form dan validasi
+
+- Skema Zod per form ada di `features/*/schemas`. Pesan error dalam bahasa Indonesia.
+- Service memvalidasi ulang dengan aturan domain, karena aturan yang bergantung data (sisa kursi, transisi status) tidak bisa dijamin oleh form. Error dari service dipetakan ke field atau ke banner form.
+- Form publik menampilkan catatan "Gunakan data fiktif. Data hanya tersimpan di browser ini." dan tidak meminta nomor identitas, data kesehatan, atau data pembayaran.
+
+## 9. Lapisan demo
+
+- **Dashboard:** badge **Demo Mode** di topbar membuka panel berisi: panduan perjalanan demo, buka website publik, reset data, dan tanggal Seed Anchor.
+- **Website publik:** tombol kecil "Demo" di pojok kiri bawah dengan isi panel yang sama, ditambah tautan ke dashboard. Footer mencantumkan "Situs demonstrasi · Dikembangkan oleh Kalsara Digital Studio".
+- **Halaman `/demo`:** pintu masuk showcase: penjelasan singkat, dua tombol utama (Website / Dashboard), langkah perjalanan demo, dan reset.
+- **Panduan perjalanan demo:** 7 langkah dari requirement §10. Langkah dicentang otomatis dengan membaca data (misalnya langkah "Buat booking" selesai jika ada booking dari website yang dibuat setelah seed), sehingga progres tidak bisa berbeda dari kenyataan.
+- **Aksi simulasi** selalu diberi label: tombol WhatsApp membuka dialog "Simulasi — pesan tidak dikirim" alih-alih tautan `wa.me`; email dan bukti transfer bertanda simulasi; halaman konfirmasi tidak pernah memakai kata "pembayaran berhasil" untuk transaksi nyata.
+
+## 10. State UI yang wajib ada
+
+Setiap halaman data memiliki empat state yang dirancang: **loading** (skeleton sesuai layout), **kosong** (penjelasan + aksi utama), **error** (pesan + coba lagi), dan **sukses** (toast atau perubahan inline). Error boundary per segmen route (`error.tsx`) dan `not-found.tsx` khusus untuk publik dan dashboard.
+
+## 11. Aksesibilitas dan performa
+
+- HTML semantik, label pada semua input, focus ring terlihat (token `--ring`), skip link, urutan heading benar.
+- Dialog dan sheet memakai Radix (focus trap, `Esc`, kembali fokus). Kanban memiliki alternatif keyboard ("Pindahkan ke…") selain drag.
+- Grafik memiliki ringkasan teks dan tabel data alternatif.
+- `prefers-reduced-motion` mematikan animasi non-esensial.
+- Target: LCP website publik < 2,5 dtk di 4G, hero memakai `next/image` dengan `priority` dan `sizes` yang benar; gambar lain lazy load; JavaScript publik minimal (Motion dan Recharts tidak dimuat di halaman yang tidak memakainya).
+
+## 12. Deployment
+
+- Vercel, preset Next.js, tanpa environment variable. `next build` harus lolos type-check dan lint.
+- Semua data berada di browser, sehingga setiap pengunjung mendapat salinan demo sendiri. Tidak ada state server yang perlu dibersihkan.
+- `robots.txt` menolak semua crawler dan metadata `robots: noindex`.
