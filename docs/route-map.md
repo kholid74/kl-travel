@@ -13,13 +13,13 @@ Legenda render: **S** = dirender server dari fixture seed · **C** = data dari s
 | `/paket/[slug]` | Detail paket | S+C | Galeri, ringkasan, itinerary per hari, termasuk/tidak, meeting point, syarat peserta, S&K, kebijakan pembatalan, FAQ, paket terkait. Panel booking sticky (desktop) dan CTA bawah (mobile). Open Trip: pilih keberangkatan + sisa kursi live. Private: harga per ukuran grup |
 | `/paket/[slug]/pesan` | Booking Open Trip | C | `?keberangkatan=<kode>`. Langkah: Keberangkatan → Jumlah peserta → Data peserta → Ringkasan → Kirim. Paket non-open dialihkan ke `/ajukan` |
 | `/paket/[slug]/ajukan` | Permintaan Private Trip | C | Langkah: Tanggal pilihan → Ukuran grup → Kebutuhan khusus → Kontak → Kirim |
-| `/custom-trip` | Rancang Custom Trip | C | Langkah: Destinasi → Tanggal → Ukuran grup → Budget → Minat → Ringkasan → Kirim. `?dari=<slug>` mengisi awal dari paket inspirasi |
+| `/custom-trip` | Rancang Custom Trip | C | Langkah: Destinasi → Tanggal → Ukuran grup → Budget → Minat → Ringkasan → Kirim. `?dari=<slug>` mengisi awal dari paket inspirasi, `?destinasi=<slug>` dari halaman destinasi |
 | `/konfirmasi/booking/[code]` | Konfirmasi booking | C | Status live dari store. Saat status Menunggu Pembayaran: rincian termin, rekening simulasi, dan tombol "Konfirmasi pembayaran (simulasi)" yang membuat payment menunggu verifikasi. Tautan "Lihat di dashboard" (lapisan demo) |
 | `/konfirmasi/permintaan/[code]` | Konfirmasi inquiry | C | Ringkasan permintaan dan langkah berikutnya. Tautan ke dashboard |
 | `/jurnal` | Daftar artikel | S+C | Filter kategori, artikel unggulan |
 | `/jurnal/[slug]` | Artikel | S+C | Blok konten, destinasi dan paket terkait |
 | `/tentang` | Tentang kami | S+C | Konten dari Site Content `about`. Testimoni berlabel ilustrasi |
-| `/kontak` | Kontak | S+C | Info kontak fiktif, form pertanyaan (membuat inquiry `general`), tombol WhatsApp simulasi |
+| `/kontak` | Kontak | S+C | Info kontak fiktif, form pertanyaan (membuat inquiry `general`), tombol WhatsApp simulasi. `?paket=<slug>` memilih paket yang ditanyakan |
 | `/demo` | Pintu masuk showcase | S+C | Penjelasan showcase, tombol Website / Dashboard, panduan perjalanan demo, reset data |
 | `/kredit-foto` | Kredit foto | S | Daftar fotografer Unsplash per gambar |
 

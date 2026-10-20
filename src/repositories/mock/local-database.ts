@@ -70,9 +70,12 @@ export class LocalDatabase implements DataSource {
     const draft = structuredClone(base)
     const result = work(createUnitOfWork(draft, this.clock.now().toISOString()))
     if (result instanceof Promise) throw new Error("Transactions must be synchronous")
-    this.persist(draft)
-    this.afterCommit?.(draft)
-    this.publish(draft, [])
+    // New top-level identity: indexes memoised on the draft during `work` describe the
+    // pre-mutation state and must not be reused for the committed snapshot.
+    const committed = { ...draft }
+    this.persist(committed)
+    this.afterCommit?.(committed)
+    this.publish(committed, [])
     return result
   }
 

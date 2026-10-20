@@ -642,6 +642,8 @@ Kebijakan default: ≥ 30 hari 25%; 15–29 hari 50%; 7–14 hari 75%; < 7 hari 
 
 Membatalkan Scheduled Departure membatalkan semua booking aktif di dalamnya dengan `reason = departure_cancelled`.
 
+Sebaliknya, membatalkan booking di Private Departure (termasuk karena hold kedaluwarsa) ikut membatalkan departure tersebut, karena Private Departure hanya ada untuk satu booking itu (`services/departure-cascade.ts`).
+
 ### 6.7 Konversi inquiry ke booking
 
 Syarat: tahap `won` dan belum pernah dikonversi.
@@ -733,7 +735,7 @@ Divalidasi oleh `validateDatabase()` (unit test atas seed dan dijalankan saat de
 
 1. Semua referensi ID menunjuk entitas yang ada.
 2. `allocated(d) + held(d) ≤ d.capacity` untuk setiap departure.
-3. `booking.packageId = departure.packageId`. Private Departure berisi tepat satu booking tidak batal.
+3. `booking.packageId = departure.packageId`. Private Departure yang tidak batal berisi tepat satu booking tidak batal; yang sudah batal tidak berisi booking aktif.
 4. Untuk baris harga per pax, `quantity = pax(booking)`.
 5. `total ≥ 0`. Total invoice = total booking. Σ termin = total.
 6. `paidNet ≤ total`. Untuk booking batal: refund terverifikasi ≤ `refundAmount`.

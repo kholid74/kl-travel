@@ -54,17 +54,27 @@ Status: ☑ selesai · ☐ belum. Setiap phase diakhiri dengan `npm run typechec
 - → Phase 4: layout cetak (`app/print`), dibuat bersama halaman invoice dan manifest
 - → Phase 6: verifikasi visual angka `tabular-nums` pada Plus Jakarta Sans
 
-## Phase 2 — Website publik
+## Phase 2 — Website publik ☑
 
-- ☐ Beranda: 12 section, komposisi editorial bervariasi, konten dari Site Content
-- ☐ `/paket`: pencarian, 5 filter, urutan, indikator ketersediaan, filter di query string, sheet filter mobile, empty state
-- ☐ `/paket/[slug]`: seluruh isi §4.4, panel booking sticky, bar CTA mobile, paket buatan dashboard diselesaikan di browser (Cache Components)
-- ☐ `/destinasi` dan `/destinasi/[slug]`: pencarian, filter wilayah dan kategori, paket terkait
-- ☐ Alur Open Trip (`/pesan`) dengan validasi, progres, cek kursi saat kirim, konfirmasi
-- ☐ Alur Private Trip (`/ajukan`) dan Custom Trip (`/custom-trip`), konfirmasi inquiry
-- ☐ Halaman konfirmasi booking live + "Konfirmasi pembayaran (simulasi)"
-- ☐ `/jurnal`, `/jurnal/[slug]`, `/tentang`, `/kontak` (form → inquiry general), `/demo`, `/kredit-foto`
-- ☐ Review mobile 360 px dan 390 px: tanpa scroll horizontal, CTA sticky berfungsi
+- ☑ Beranda: 12 section (hero + pencarian trip, mosaik destinasi asimetris, open trip pilihan dengan satu fitur editorial, Private & Custom Trip, jadwal keberangkatan live, keunggulan, jurnal, FAQ, CTA penutup), semuanya dari Site Content dan katalog live
+- ☑ `/paket`: pencarian, filter jenis/destinasi/durasi/harga/bulan, 5 urutan, baris ketersediaan per kartu, filter di query string, sheet filter mobile, chip filter aktif, empty state; logika filter teruji
+- ☑ `/paket/[slug]`: galeri + lightbox, fakta singkat, itinerary per hari, fasilitas, jadwal dengan sisa kursi live atau tabel harga per ukuran grup, titik kumpul, syarat peserta, S&K, kebijakan pembatalan, pembayaran, FAQ, destinasi, paket terkait; panel booking sticky dan bar CTA mobile; slug buatan dashboard diselesaikan di browser
+- ☑ `/destinasi` dan `/destinasi/[slug]`: pencarian, filter wilayah dan kategori, hero foto, sorotan, galeri, paket terkait live, artikel terkait
+- ☑ Alur Open Trip (`/pesan`): 4 langkah, validasi Zod per langkah, cek kursi di dalam transaksi saat kirim, "Isi data contoh", konfirmasi
+- ☑ Alur Private Trip (`/ajukan`, 4 langkah) dan Custom Trip (`/custom-trip`, 6 langkah, kalender rentang atau bulan fleksibel), konfirmasi inquiry dengan status live
+- ☑ Halaman konfirmasi booking live: hold + hitung mundur, termin invoice, rekening simulasi, dialog "Konfirmasi pembayaran (simulasi)", tautan ke dashboard
+- ☑ `/jurnal`, `/jurnal/[slug]`, `/tentang` (testimoni berlabel ilustrasi), `/kontak` (form → inquiry general, WhatsApp simulasi), `/demo`, `/kredit-foto`
+- ☑ Diverifikasi di Chrome headless: 1440, 390, dan 360 px tanpa scroll horizontal dan tanpa error konsol; alur booking, pembayaran, private, custom, dan kontak dijalankan end-to-end
+- ☑ `next build`: 66 halaman, slug seed statis, route berbasis kode memakai Partial Prerender
+
+**Perbaikan dari Phase 1 yang ditemukan di Phase 2**
+- Snapshot hasil transaksi bisa membawa indeks basi dari `getIndexes()` → snapshot kini selalu objek baru, dikunci test
+- Pembatalan booking Private Departure (hold kedaluwarsa) tidak ikut membatalkan departure → kaskade di `departure-cascade.ts`, invarian 3 diperjelas
+- `cn()` membuang ukuran teks kustom → `tailwind-merge` diberi skala tipografi
+
+**Catatan untuk phase berikutnya**
+- Tautan "Lihat di dashboard" dari halaman konfirmasi dan langkah 4–7 di `/demo` menuju route dashboard yang dibangun di Phase 3–4
+- Phase 6: ukuran payload awal per halaman (HTML 22–35 KB gzip setelah katalog ringkas) dan LCP hero
 
 ## Phase 3 — Dashboard inti
 

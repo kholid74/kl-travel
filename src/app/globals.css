@@ -262,6 +262,24 @@
   );
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Page-level bottom CTA bars (data-mobile-cta) on phones and tablets: keep the footer
+   readable and lift the floating demo button above the bar. */
+@media (width < 64rem) {
+  body:has([data-mobile-cta]) {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  body:has([data-mobile-cta]) [data-demo-launcher] {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

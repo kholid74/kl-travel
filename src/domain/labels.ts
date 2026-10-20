@@ -2,12 +2,21 @@
  * Indonesian labels for domain vocabulary (see CONTEXT.md). Shared by the UI and by
  * activity messages written into the database. Visual tones live in features/*.
  */
-import type { BookingStatus, CancellationReason, InquiryType, LostReason, PaymentMethod, PipelineStage } from "./entities"
+import type {
+  Article,
+  BookingStatus,
+  CancellationReason,
+  FitnessLevel,
+  InquiryType,
+  LostReason,
+  PaymentMethod,
+  PipelineStage,
+} from "./entities"
 import type { DepartureDisplayStatus } from "./rules/availability"
 import type { QuotationDisplayStatus } from "./rules/inquiry-pipeline"
 import type { PaymentStatus } from "./rules/payment-status"
 import type { ReadinessStatus } from "./rules/trip-readiness"
-import type { BudgetRange, Interest, RegionKey, Source, TripType } from "./types/common"
+import type { BudgetRange, DestinationCategory, Interest, RegionKey, Source, TripType } from "./types/common"
 
 export const TRIP_TYPE_LABEL: Record<TripType, string> = {
   open: "Open Trip",
@@ -127,6 +136,27 @@ export const INTEREST_LABEL: Record<Interest, string> = {
   honeymoon: "Bulan madu",
   keluarga: "Keluarga",
   petualangan: "Petualangan",
+}
+
+export const ARTICLE_CATEGORY_LABEL: Record<Article["category"], string> = {
+  panduan: "Panduan",
+  inspirasi: "Inspirasi",
+  tips: "Tips",
+}
+
+export const DESTINATION_CATEGORY_LABEL: Record<DestinationCategory, string> = {
+  bahari: "Bahari",
+  pulau: "Pulau",
+  pegunungan: "Pegunungan",
+  budaya: "Budaya",
+  petualangan: "Petualangan",
+  santai: "Santai",
+}
+
+export const FITNESS_LABEL: Record<FitnessLevel, string> = {
+  ringan: "Ringan",
+  sedang: "Sedang",
+  menantang: "Menantang",
 }
 
 export const BUDGET_LABEL: Record<BudgetRange, string> = {

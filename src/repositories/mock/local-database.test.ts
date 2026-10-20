@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { addHours } from "@/lib/dates"
 import { buildSeed } from "@/data/seed/build-seed"
+import { getIndexes } from "@/domain/indexes"
 import { validateDatabase } from "@/domain/rules/validate-database"
 import { findSystemWork, runSystemJobs } from "@/services/system-jobs"
 import { DB_STORAGE_KEY, LocalDatabase } from "./local-database"
@@ -51,6 +52,20 @@ describe("LocalDatabase", () => {
     expect(stored.siteContent.promoBanner.enabled).toBe(true) // tab B's change survived tab A's write
     expect(stored.packages.pkg_blt_east_retreat_3h2m.status).toBe("published")
     expect(versions).toHaveLength(1)
+  })
+
+  it("never publishes indexes memoised during the transaction", () => {
+    const db = new LocalDatabase({ storage: createMemoryStorage(), clock: clockAt(NOW) })
+    db.load()
+    const bookingId = Object.values(db.current().db.bookings).find((b) => b.status === "confirmed")!.id
+    db.transaction((uow) => {
+      getIndexes(uow.snapshot()) // memoised on the working copy before the change
+      uow.bookings.update(bookingId, { status: "cancelled" })
+    })
+    const after = db.current().db
+    const departureId = after.bookings[bookingId].departureId
+    const fromIndex = getIndexes(after).bookingsByDeparture.get(departureId)!.find((b) => b.id === bookingId)
+    expect(fromIndex?.status).toBe("cancelled")
   })
 
   it("does not persist when a transaction throws", () => {

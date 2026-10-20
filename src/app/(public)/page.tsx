@@ -1,42 +1,29 @@
-import Link from "next/link"
-import { Hero } from "@/components/public/hero"
-import { SmartImage } from "@/components/shared/smart-image"
-import { REGION_LABEL } from "@/domain/labels"
-import { getSeedDestinations, getSeedSiteContent } from "@/services/catalog-server"
+import { ClosingCta } from "@/components/public/closing-cta"
+import { DepartureTimetable } from "@/features/home/components/departure-timetable"
+import { DestinationMosaic } from "@/features/home/components/destination-mosaic"
+import { FeaturedTrips } from "@/features/home/components/featured-trips"
+import { HomeFaq } from "@/features/home/components/home-faq"
+import { HomeHero } from "@/features/home/components/home-hero"
+import { JournalSpread } from "@/features/home/components/journal-spread"
+import { TripModels } from "@/features/home/components/trip-models"
+import { WhyUs } from "@/features/home/components/why-us"
+import { getSeedCatalog, getSeedContent } from "@/services/catalog-server"
 
-/**
- * Phase 1 homepage: hero and destination strip to exercise the foundation (fonts, tokens,
- * images, layout). The full 12-section homepage is built in Phase 2.
- */
+/** Homepage (requirement §4.1). Header and footer come from the (public) layout. */
 export default function HomePage() {
-  const content = getSeedSiteContent()
-  const destinations = getSeedDestinations()
+  const catalog = getSeedCatalog()
+  const content = getSeedContent()
   return (
     <>
-      <Hero hero={content.hero} />
-      <section className="container-page py-20 md:py-28">
-        <p className="eyebrow text-lagoon-700">Destinasi</p>
-        <h2 className="mt-3 max-w-2xl font-display text-display-md text-ocean-900">Delapan destinasi, satu cara bepergian yang lebih tenang.</h2>
-        <ul className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-          {destinations.map((destination) => (
-            <li key={destination.id}>
-              <Link href={`/destinasi/${destination.slug}`} className="group block">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-muted">
-                  <SmartImage
-                    mediaId={destination.coverMediaId}
-                    fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                    className="transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                </div>
-                <p className="mt-4 eyebrow text-muted-foreground">{REGION_LABEL[destination.region]}</p>
-                <p className="mt-1 font-display text-2xl text-ocean-900">{destination.name}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{destination.tagline}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <HomeHero initialContent={content} initialCatalog={catalog} />
+      <DestinationMosaic initialContent={content} initialCatalog={catalog} />
+      <FeaturedTrips initialContent={content} initialCatalog={catalog} />
+      <TripModels initialCatalog={catalog} />
+      <DepartureTimetable />
+      <WhyUs initialContent={content} />
+      <JournalSpread initialContent={content} />
+      <HomeFaq initialContent={content} />
+      <ClosingCta />
     </>
   )
 }

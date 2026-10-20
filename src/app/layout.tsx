@@ -36,7 +36,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${jakarta.variable} ${instrument.variable} h-full`}>
+    // data-scroll-behavior lets Next.js turn smooth scrolling off during route transitions.
+    <html lang="id" data-scroll-behavior="smooth" className={`${jakarta.variable} ${instrument.variable} h-full`}>
       <body className="min-h-full">
         <a
           href="#konten"

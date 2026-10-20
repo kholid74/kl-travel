@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
+  // The public site's Demo button lives bottom-left.
+  devIndicators: { position: "bottom-right" },
   partialPrefetching: true,
   turbopack: {
     rules: {

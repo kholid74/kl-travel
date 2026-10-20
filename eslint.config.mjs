@@ -48,6 +48,11 @@ const eslintConfig = defineConfig([
     rules: { "no-restricted-imports": ["error", DOMAIN_RESTRICTED_IMPORTS] },
   },
   {
+    // Tests may build seed data directly.
+    files: ["src/app/**/*.test.ts", "src/components/**/*.test.ts", "src/features/**/*.test.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },

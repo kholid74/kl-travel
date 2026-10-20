@@ -72,6 +72,10 @@ src/
     db-store.ts                   # snapshot + version + status hydration
     ui-store.ts                   # sidebar, persona, view, panduan demo
 
+  hooks/
+    use-now.ts                    # jam bersama (null saat SSR/hydration), berdetak 30 detik
+    use-url-search-input.ts       # kotak pencarian yang tersinkron ke query string
+
   lib/
     format.ts                     # formatIDR, formatIDRCompact, formatDate, formatDateRange, formatDuration, formatPhone
     dates.ts                      # clock, today() WIB, addDays, diffDays untuk DateOnly
@@ -173,3 +177,6 @@ src/
 | reports | `ReportFilters`, satu komponen per grafik |
 | content | `HomepageContentForm`, `FeaturedPicker`, `AboutContentForm`, `ArticleEditor` |
 | demo | `DemoGuide`, `DemoResetButton`, `SeedAgeBanner` |
+| home (publik) | `HomeHero`, `DestinationMosaic`, `FeaturedTrips`, `TripModels`, `DepartureTimetable`, `WhyUs`, `JournalSpread`, `HomeFaq` |
+
+Catatan Phase 2: `BookingPanel`, `DepartureList`, `PackageGallery`, `PackageExplorer`, dan `PackageFilterPanel` tinggal di `features/packages/components` karena memanggil hook data live. Komponen presentasi murni (`PackageCard`, `ArticleCard`, `ItineraryTimeline`, `FlowShell`, `SectionHeading`) ada di `components/public`. Primitif form bersama: `Field`/`FieldGroup`, `ChipToggle`, `ChoiceCard`, `QuantityStepper` (`components/shared`), dan `Calendar` (`components/ui`).

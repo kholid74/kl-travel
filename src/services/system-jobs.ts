@@ -6,6 +6,7 @@ import { bookingFinancials } from "@/domain/rules/payment-status"
 import type { ID } from "@/domain/types/common"
 import type { DataSource } from "@/repositories"
 import { logActivity, SYSTEM_ACTOR } from "./activity-log"
+import { cancelPrivateDepartureOf } from "./departure-cascade"
 
 export interface SystemWork {
   expireHolds: ID[]
@@ -63,6 +64,11 @@ export function runSystemJobs(dataSource: DataSource, now: Date = new Date()): S
         subject: { type: "booking", id },
         action: "booking.cancelled",
         message: `Booking ${booking.code} dibatalkan otomatis karena batas waktu ${booking.status === "pending" ? "verifikasi" : "pembayaran DP"} terlewati`,
+      })
+      cancelPrivateDepartureOf(uow, {
+        departureId: booking.departureId,
+        reason: `booking ${booking.code} dibatalkan karena batas waktu pembayaran terlewati`,
+        actor: SYSTEM_ACTOR,
       })
     }
     for (const id of fresh.completeBookings) {

@@ -79,6 +79,12 @@ Catatan Phase 1:
 - `shadcn init` menambahkan paket `cn` (0.x, rilis terbaru 4 hari) dan paket CLI `shadcn` sebagai dependency. Keduanya dihapus: `cn()` memakai `clsx` + `tailwind-merge`, dan bagian `shadcn/tailwind.css` yang dibutuhkan disalin ke `src/app/shadcn-base.css`.
 - `npm audit` produksi: 0 kerentanan. Lima temuan `high` hanya di tooling dev (`eslint-config-next` → `braces`).
 
+Catatan Phase 2:
+
+- `motion` 13.5.1 (bukan 14.0.0 yang baru berumur 18 hari dan berganti versi mayor) dan `react-day-picker` 9.14.0 (v9 stabil; v10 baru keluar). Kalender memakai locale `id` dari `date-fns`, Senin sebagai awal minggu.
+- `tailwind-merge` diberi tahu skala tipografi kustom (`text-display-*`, `text-heading`, dll.). Tanpa itu, `cn()` menganggapnya warna dan membuangnya saat bertemu `text-ocean-900`.
+- `next/image`: prop `priority` sudah deprecated di Next 16 dan diganti `preload`. React 19 juga otomatis mem-preload gambar yang tidak `lazy` saat render server, sehingga galeri memakai satu set elemen untuk semua breakpoint (strip geser di mobile, grid di desktop) agar hanya satu foto yang di-preload.
+
 ## 4. Lapisan aplikasi
 
 ```text
@@ -150,6 +156,10 @@ service.action(input)                         async, dipanggil hook fitur
 
 Transaksi sengaja sinkron. Unit of work bekerja pada salinan dokumen di memori, sehingga atomik tanpa kunci, dan error di tengah transaksi tidak menulis apa pun. Latensi dan kegagalan simulasi ada di `runCommand`, bukan di repository.
 
+Snapshot yang dipublikasikan selalu objek tingkat atas yang baru (`{ ...draft }`). `getIndexes()` di-memo per objek snapshot, sehingga indeks yang dihitung di dalam transaksi (sebelum mutasi) tidak pernah terbawa ke snapshot hasil commit. Bug ini ditemukan di Phase 2 dan dikunci oleh test.
+
+Service website: `placeWebsiteBooking` (cek kursi terhadap dokumen terbaru di dalam transaksi, sehingga dua tab tidak bisa overbooking), `recordPaymentConfirmation` (payment `pending_verification`, dibatasi sisa tagihan yang belum dikonfirmasi), `placeWebsiteInquiry` (private, custom, general), dan `resolveCustomer` (dedupe telepon lalu email, §6.8 domain model).
+
 `DomainError` memiliki `code` (`SEATS_UNAVAILABLE`, `INVALID_TRANSITION`, `VALIDATION`, `NOT_FOUND`, `PERMISSION_DENIED`, `STORAGE_UNAVAILABLE`, `SIMULATED_FAILURE`) dan `message` bahasa Indonesia yang siap ditampilkan.
 
 ### 5.3 Sinkronisasi antartab
@@ -199,6 +209,15 @@ Aturan anti hydration error:
 - Island menerima `initialData` dari server dan memakainya pada render pertama, lalu berpindah ke data store setelah store terhidrasi.
 
 Statis vs dinamis: halaman publik untuk slug seed dibangun statis (`generateStaticParams`). Dengan Cache Components, slug di luar daftar itu (paket buatan dashboard) dirender saat request. Opsi `dynamicParams` tidak tersedia dalam mode ini. Client component yang memakai `usePathname`/`useSearchParams` dibungkus `<Suspense>`. Halaman detail dashboard (`[id]`) tidak membutuhkan data di server.
+
+Pola yang dipakai di Phase 2:
+
+- `await params` dilakukan di komponen async di dalam `<Suspense>`, bukan di level halaman, agar navigasi tetap instan (insight "instant navigation" Next 16).
+- Island yang membaca query string punya dua varian: `XxxRoute` (memakai `useSearchParams`, di dalam `<Suspense>`) dan `XxxFallback` (tanpa query, dirender di shell statis). Contoh: daftar paket, detail paket (`?keberangkatan=`), alur booking.
+- Halaman konfirmasi (`/konfirmasi/*/[code]`) tidak punya `generateStaticParams`; kode dibaca dengan `useParams` di dalam `<Suspense>` karena booking hanya ada di browser pengunjung.
+- Waktu sekarang dibaca lewat `useNow()` (`useSyncExternalStore`, `null` saat server render dan hydration, berdetak tiap 30 detik), sehingga sisa kursi, hold, dan tanggal relatif tidak pernah menimbulkan hydration mismatch.
+- Katalog awal untuk island dikirim dalam versi ringkas (`getSeedCatalog()` mengosongkan itinerary, FAQ, dan syarat), kecuali paket yang sedang dibuka. Data lengkap datang dari database browser setelah hydration.
+- Kotak pencarian yang tersinkron ke URL memakai `useUrlSearchInput`: hasil filter langsung mengikuti ketikan, URL menyusul setelah jeda, dan perubahan URL dari tombol back tetap tercermin.
 
 Lingkup tema: `ThemeScope` memberi class `.theme-public` / `.theme-dashboard` pada subtree. Konten portal (dialog, menu, tooltip) dibungkus `ThemeScopeContents` (elemen `display: contents`), sehingga mewarisi token yang sama meskipun dirender di `<body>`.
 

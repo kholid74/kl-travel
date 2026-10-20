@@ -18,11 +18,11 @@ import { cn } from "@/lib/utils"
 import { PRIMARY_CTA, PUBLIC_NAV } from "./nav"
 
 /** Routes whose first section is a full-bleed photo the header floats over. */
-const OVERLAY_ROUTES = new Set(["/"])
+const OVERLAY_ROUTES = [/^\/$/, /^\/destinasi\/[^/]+$/, /^\/tentang$/]
 
 export function SiteHeader() {
   const pathname = usePathname()
-  return <SiteHeaderView overlay={OVERLAY_ROUTES.has(pathname)} pathname={pathname} />
+  return <SiteHeaderView overlay={OVERLAY_ROUTES.some((route) => route.test(pathname))} pathname={pathname} />
 }
 
 /** Static variant used as the Suspense fallback and on routes without a hero. */

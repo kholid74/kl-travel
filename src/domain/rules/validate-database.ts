@@ -58,10 +58,11 @@ export function validateDatabase(db: DemoDatabase, now: Timestamp): string[] {
     if (seats.allocated + seats.held > dep.capacity) {
       issues.push(`departure ${dep.code}: ${seats.allocated}+${seats.held} seats exceed capacity ${dep.capacity}`)
     }
-    // 3. private departures hold exactly one active booking
+    // 3. a private departure holds exactly one active booking, or none once cancelled
     if (dep.kind === "private") {
       const active = bookings.filter((b) => b.status !== "cancelled")
-      if (active.length !== 1) issues.push(`private departure ${dep.code}: ${active.length} active bookings`)
+      const expected = dep.cancelledAt ? 0 : 1
+      if (active.length !== expected) issues.push(`private departure ${dep.code}: ${active.length} active bookings`)
     }
     // 11. guide double-booking
     if (dep.guideId && !dep.cancelledAt) {
