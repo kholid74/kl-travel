@@ -1,27 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowUpRight, Globe, LayoutDashboard } from "lucide-react"
+import { DemoJourneyGrid } from "@/features/demo/components/demo-journey"
 import { DemoPanel } from "@/features/demo/components/demo-panel"
 
 export const metadata: Metadata = {
   title: "Panduan demo",
   description: "Cara menjelajahi showcase NusaVista Journey: website travel publik dan dashboard operasional dalam satu data demo.",
 }
-
-const JOURNEY = [
-  { title: "Jelajahi paket", body: "Cari dan filter paket, lalu buka detail Sailing Komodo.", href: "/paket", cta: "Buka daftar paket" },
-  {
-    title: "Buat booking",
-    body: "Pilih jadwal, isi data contoh, dan kirim. Kursi langsung ditahan 24 jam.",
-    href: "/paket/sailing-komodo-phinisi-3h2m/pesan",
-    cta: "Pesan open trip",
-  },
-  { title: "Buka dashboard", body: "Lihat booking baru muncul di ringkasan dan aktivitas terbaru.", href: "/dashboard", cta: "Buka dashboard" },
-  { title: "Tinjau booking", body: "Verifikasi booking agar invoice dengan jadwal DP terbit.", href: "/dashboard/bookings", cta: "Daftar booking" },
-  { title: "Perbarui pembayaran", body: "Catat atau verifikasi pembayaran DP; status booking ikut berubah.", href: "/dashboard/payments", cta: "Pembayaran" },
-  { title: "Tinjau keberangkatan", body: "Cek sisa kursi, manifest, dan kesiapan trip.", href: "/dashboard/departures", cta: "Keberangkatan" },
-  { title: "Lihat statistik", body: "KPI dan laporan dihitung ulang dari data yang baru Anda ubah.", href: "/dashboard/reports", cta: "Laporan" },
-]
 
 const SIMULATED = [
   "Semua data tersimpan di browser ini (localStorage). Perubahan bertahan setelah refresh dan tersinkron antar-tab, tetapi tidak antar-perangkat.",
@@ -62,21 +48,7 @@ export default function DemoPage() {
         <h2 id="perjalanan-demo" className="font-display text-display-md text-ocean-900">
           Perjalanan demo yang disarankan
         </h2>
-        <p className="mt-3 max-w-2xl text-muted-foreground">Sekitar sepuluh menit untuk melihat satu booking bergerak dari website hingga laporan.</p>
-        <ol className="mt-10 grid gap-x-8 gap-y-8 md:grid-cols-2 lg:grid-cols-3">
-          {JOURNEY.map((step, index) => (
-            <li key={step.title} className="border-t border-ocean-900/80 pt-5">
-              <span aria-hidden="true" className="font-display text-3xl text-sand-600 tabular-nums">
-                0{index + 1}
-              </span>
-              <h3 className="mt-2 text-lg font-semibold text-ocean-900">{step.title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{step.body}</p>
-              <Link href={step.href} className="mt-3 inline-block text-sm font-semibold text-lagoon-700 underline-offset-4 hover:underline">
-                {step.cta}
-              </Link>
-            </li>
-          ))}
-        </ol>
+        <DemoJourneyGrid />
       </section>
 
       <section aria-labelledby="simulasi" className="mt-20 grid gap-10 lg:grid-cols-12">

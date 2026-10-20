@@ -3,6 +3,7 @@
 import { create } from "zustand"
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware"
 import { DEFAULT_PERSONA_ID } from "@/data/fixtures/people"
+import type { JourneyVisit } from "@/services/demo-service"
 
 /** localStorage wrapped so private mode or blocked storage never throws. */
 const safeStorage: StateStorage = {
@@ -35,10 +36,13 @@ interface UiState {
   /** Last chosen view per page, e.g. { inquiries: "board" }. */
   views: Record<string, string>
   demoGuideDismissed: boolean
+  /** Last visit per demo-journey page (ISO time), for steps the data cannot show. */
+  journeyVisits: Partial<Record<JourneyVisit, string>>
   setSidebarCollapsed: (value: boolean) => void
   setPersona: (userId: string) => void
   setView: (page: string, view: string) => void
   setDemoGuideDismissed: (value: boolean) => void
+  recordVisit: (key: JourneyVisit, at: string) => void
 }
 
 export const useUiStore = create<UiState>()(
@@ -48,20 +52,23 @@ export const useUiStore = create<UiState>()(
       personaId: DEFAULT_PERSONA_ID,
       views: {},
       demoGuideDismissed: false,
+      journeyVisits: {},
       setSidebarCollapsed: (value) => set({ sidebarCollapsed: value }),
       setPersona: (userId) => set({ personaId: userId }),
       setView: (page, view) => set((state) => ({ views: { ...state.views, [page]: view } })),
       setDemoGuideDismissed: (value) => set({ demoGuideDismissed: value }),
+      recordVisit: (key, at) => set((state) => ({ journeyVisits: { ...state.journeyVisits, [key]: at } })),
     }),
     {
       name: "nusavista-demo:ui",
       storage: createJSONStorage(() => safeStorage),
       skipHydration: true,
-      partialize: ({ sidebarCollapsed, personaId, views, demoGuideDismissed }) => ({
+      partialize: ({ sidebarCollapsed, personaId, views, demoGuideDismissed, journeyVisits }) => ({
         sidebarCollapsed,
         personaId,
         views,
         demoGuideDismissed,
+        journeyVisits,
       }),
     },
   ),

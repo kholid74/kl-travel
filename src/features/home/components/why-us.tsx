@@ -1,21 +1,11 @@
 "use client"
 
-import { CalendarCheck, Compass, HeartHandshake, Leaf, Receipt, ShieldCheck, Users, type LucideIcon } from "lucide-react"
+import { Compass } from "lucide-react"
 import { Reveal } from "@/components/public/motion"
 import { SectionHeading } from "@/components/public/section-heading"
 import { usePublicContent } from "@/features/content/hooks/use-public-content"
 import type { PublicContent } from "@/services/queries/catalog"
-
-/** Icon names an editor can pick in Site Content. */
-export const WHY_US_ICONS: Record<string, LucideIcon> = {
-  users: Users,
-  "calendar-check": CalendarCheck,
-  receipt: Receipt,
-  compass: Compass,
-  shield: ShieldCheck,
-  leaf: Leaf,
-  handshake: HeartHandshake,
-}
+import { WHY_US_ICONS } from "@/features/content/why-us-icons"
 
 export function WhyUs({ initialContent }: { initialContent: PublicContent }) {
   const { siteContent } = usePublicContent(initialContent)
@@ -30,7 +20,7 @@ export function WhyUs({ initialContent }: { initialContent: PublicContent }) {
         />
         <ul className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {siteContent.whyUs.map((item, index) => {
-            const Icon = WHY_US_ICONS[item.icon] ?? Compass
+            const Icon = WHY_US_ICONS[item.icon]?.icon ?? Compass
             return (
               <li key={item.title} className="border-t border-ocean-900/80 pt-6">
                 <Reveal delay={index * 0.06}>

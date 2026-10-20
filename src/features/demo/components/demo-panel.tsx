@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, type ComponentProps } from "react"
 import { toast } from "sonner"
 import { ExternalLink, HardDrive, RotateCcw } from "lucide-react"
 import { formatDate } from "@/lib/format"
@@ -19,20 +19,52 @@ import {
 } from "@/components/ui/alert-dialog"
 import { demoStatus, resetDemoData } from "@/services/demo-service"
 import { useDbStore } from "@/stores/db-store"
+import { DemoJourneyList } from "./demo-journey"
+
+/** Reset with confirmation; used by the demo panel, the stale-data banner, and Pengaturan. */
+export function ResetDemoButton({ children, onDone, ...props }: ComponentProps<typeof Button> & { onDone?: () => void }) {
+  const db = useDbStore((state) => state.db)
+  const [open, setOpen] = useState(false)
+  const reset = () => {
+    resetDemoData()
+    setOpen(false)
+    onDone?.()
+    toast.success("Data demo dikembalikan ke kondisi awal", { description: "Semua tanggal dihitung ulang dari hari ini." })
+  }
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" disabled={!db} {...props}>
+          {children ?? (
+            <>
+              <RotateCcw aria-hidden="true" /> Reset data demo
+            </>
+          )}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Reset data demo?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Semua booking, inquiry, pembayaran, dan perubahan konten yang Anda buat di browser ini akan dihapus dan diganti data awal dengan
+            tanggal yang dihitung dari hari ini. Panduan demo juga mulai dari awal.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Batal</AlertDialogCancel>
+          <AlertDialogAction onClick={reset}>Reset data</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
 
 /** Shared content of the public "Demo" launcher and the dashboard Demo Mode badge. */
-export function DemoPanel({ context }: { context: "public" | "dashboard" }) {
+export function DemoPanel({ context, onNavigate }: { context: "public" | "dashboard"; onNavigate?: () => void }) {
   const db = useDbStore((state) => state.db)
   const persistent = useDbStore((state) => state.persistent)
   // The database only exists after hydration, so reading the clock here cannot cause a mismatch.
   const status = db ? demoStatus(db, new Date().toISOString()) : null
-  const [open, setOpen] = useState(false)
-
-  const reset = () => {
-    resetDemoData()
-    setOpen(false)
-    toast.success("Data demo dikembalikan ke kondisi awal", { description: "Semua tanggal dihitung ulang dari hari ini." })
-  }
 
   return (
     <div className="space-y-4 text-sm">
@@ -43,6 +75,8 @@ export function DemoPanel({ context }: { context: "public" | "dashboard" }) {
           hanya simulasi.
         </p>
       </div>
+
+      <DemoJourneyList onNavigate={onNavigate} />
 
       <div className="rounded-md bg-muted px-3 py-2.5 text-xs text-muted-foreground">
         <p className="flex items-center gap-1.5 font-medium text-foreground">
@@ -66,7 +100,9 @@ export function DemoPanel({ context }: { context: "public" | "dashboard" }) {
       <div className="grid gap-2">
         {context === "public" ? (
           <Button asChild variant="default">
-            <Link href="/dashboard">Buka dashboard operasional</Link>
+            <Link href="/dashboard" onClick={onNavigate}>
+              Buka dashboard operasional
+            </Link>
           </Button>
         ) : (
           <Button asChild variant="secondary">
@@ -75,26 +111,12 @@ export function DemoPanel({ context }: { context: "public" | "dashboard" }) {
             </Link>
           </Button>
         )}
-        <AlertDialog open={open} onOpenChange={setOpen}>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" disabled={!db}>
-              <RotateCcw aria-hidden="true" /> Reset data demo
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Reset data demo?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Semua booking, inquiry, pembayaran, dan perubahan konten yang Anda buat di browser ini akan dihapus dan diganti data
-                awal dengan tanggal yang dihitung dari hari ini.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Batal</AlertDialogCancel>
-              <AlertDialogAction onClick={reset}>Reset data</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button asChild variant="ghost">
+          <Link href="/demo" onClick={onNavigate}>
+            Tentang showcase ini
+          </Link>
+        </Button>
+        <ResetDemoButton onDone={onNavigate} />
       </div>
     </div>
   )

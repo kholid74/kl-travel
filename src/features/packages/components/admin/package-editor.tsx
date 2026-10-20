@@ -151,7 +151,10 @@ function PackageEditor({ db, today, now, pkg }: { db: DemoDatabase; today: strin
   const { user, denial } = usePersona()
   const [tab, setTab] = useState<string>("dasar")
   const [slugTouched, setSlugTouched] = useState(!!pkg)
-  const form = useForm<PackageFormValues>({ resolver: zodResolver(packageFormSchema), defaultValues: pkg ? packageToForm(pkg) : emptyPackageForm() })
+  const form = useForm<PackageFormValues>({ resolver: zodResolver(packageFormSchema), defaultValues: pkg
+      ? packageToForm(pkg)
+      : emptyPackageForm("", { depositPercent: db.settings.payment.defaultDepositPercent, balanceDueDaysBefore: db.settings.payment.defaultBalanceDueDaysBefore }),
+  })
   const { control, register, formState, setValue } = form
   const errors = formState.errors
   const faqs = useFieldArray({ control, name: "faqs" })

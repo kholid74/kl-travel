@@ -5,6 +5,7 @@ import { PromoBar } from "@/components/public/promo-bar"
 import { SiteFooter } from "@/components/public/site-footer"
 import { SiteHeader, SiteHeaderView } from "@/components/public/site-header"
 import { ThemeScope } from "@/components/theme-scope"
+import { DemoDataBanner } from "@/features/demo/components/demo-banner"
 import { Toaster } from "@/components/ui/sonner"
 import { getSeedSiteContent } from "@/services/catalog-server"
 
@@ -13,6 +14,7 @@ export default function PublicLayout({ children }: LayoutProps<"/">) {
   return (
     <ThemeScope scope="public" className="flex min-h-dvh flex-col bg-background">
       <MotionProvider>
+        <DemoDataBanner variant="public" />
         <PromoBar initial={content.promoBanner} />
         <Suspense fallback={<SiteHeaderView />}>
           <SiteHeader />

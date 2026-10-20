@@ -8,6 +8,8 @@ import { Logo } from "@/components/shared/logo"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
+import { DemoDataBanner } from "@/features/demo/components/demo-banner"
+import { JourneyTracker } from "@/features/demo/components/demo-journey"
 import { DemoPanel } from "@/features/demo/components/demo-panel"
 import { cn } from "@/lib/utils"
 import { useUiStore } from "@/stores/ui-store"
@@ -20,6 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const collapsed = useUiStore((state) => state.sidebarCollapsed)
   const setCollapsed = useUiStore((state) => state.setSidebarCollapsed)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [demoOpen, setDemoOpen] = useState(false)
   const current = findNavItem(pathname)
 
   return (
@@ -86,14 +89,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             </ol>
           </nav>
 
-          <Popover>
+          <Popover open={demoOpen} onOpenChange={setDemoOpen}>
             <PopoverTrigger className="inline-flex h-7 items-center gap-1.5 rounded-full bg-sand-100 px-2.5 text-xs font-semibold text-sand-800 outline-none hover:bg-sand-300/60 focus-visible:ring-2 focus-visible:ring-ring">
               <FlaskConical className="size-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Mode Demo</span>
               <span className="sm:hidden">Demo</span>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-4">
-              <DemoPanel context="dashboard" />
+            <PopoverContent align="end" className="max-h-[80dvh] w-80 overflow-y-auto p-4">
+              <DemoPanel context="dashboard" onNavigate={() => setDemoOpen(false)} />
             </PopoverContent>
           </Popover>
 
@@ -105,6 +108,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <PersonaSwitcher />
         </header>
 
+        <JourneyTracker />
+        <DemoDataBanner />
         <main id="konten" className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-6 md:px-6 md:py-8">
           {children}
         </main>

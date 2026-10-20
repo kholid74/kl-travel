@@ -112,13 +112,21 @@ Status: ☑ selesai · ☐ belum. Setiap phase diakhiri dengan `npm run typechec
 **Catatan untuk phase berikutnya**
 - Template biaya paket diedit dari HPP & Costing (pilih "Template biaya paket"); editor paket belum punya tab Template biaya sendiri
 
-## Phase 5 — Konten & integrasi demo
+## Phase 5 — Konten & integrasi demo ☑
 
-- ☐ Konten Website: hero, banner promo, paket unggulan, destinasi unggulan, keunggulan, FAQ, Tentang, Kontak
-- ☐ Artikel: editor blok, publish; Testimoni: edit, tampil/sembunyikan
-- ☐ Sinkronisasi publik ↔ dashboard diverifikasi di dua tab
-- ☐ Panel demo, halaman `/demo`, panduan 7 langkah dengan deteksi otomatis, reset, banner umur seed
-- ☐ Tim & Peran (matriks izin, undang simulasi) dan Pengaturan (termasuk tab Data Demo)
+- ☑ Konten Website: tab Beranda (hero dengan foto, banner promo dengan pratinjau, open trip dan destinasi unggulan dengan urutan dan batas 6/5, keunggulan dengan ikon, FAQ) · Tentang (judul, pengantar, cerita, nilai, dua foto) · Kontak. Setiap bagian disimpan terpisah dengan tanda perubahan belum disimpan; tautan "Lihat di website"
+- ☑ Artikel: daftar dengan filter status/kategori, editor blok (paragraf, subjudul, daftar, kutipan, gambar; urutkan dan hapus), slug otomatis, foto sampul, syarat publikasi, publikasikan/jadikan draf, hapus draf. Artikel buatan dashboard tampil di `/jurnal/[slug]` lewat data browser
+- ☑ Testimoni: tampil/sembunyikan, edit dan tambah di dialog (baru selalu tersembunyi dulu), label ilustrasi
+- ☑ Sinkronisasi publik ↔ dashboard diverifikasi di dua tab: banner promo, judul hero, dan urutan unggulan berubah di tab website tanpa reload; testimoni yang disembunyikan hilang dari halaman Tentang
+- ☑ Panel demo (dashboard dan website) dengan panduan 7 langkah yang tercentang otomatis dari data (booking website, verifikasi, pembayaran) dan kunjungan halaman setelah seed; halaman `/demo` menampilkan progres yang sama; reset dengan konfirmasi di panel, banner, dan Pengaturan
+- ☑ Banner data demo: data lama (> 14 hari), versi seed baru, dokumen rusak yang dibuat ulang, atau penyimpanan yang tidak tersedia
+- ☑ Tim & Peran: anggota dengan ganti peran, undang (simulasi), tandai undangan diterima, nonaktifkan/aktifkan, "Lihat sebagai"; matriks izin yang bisa diubah untuk peran selain Owner dan langsung berlaku. Owner terakhir dan persona yang sedang dipakai tidak bisa dinonaktifkan
+- ☑ Pengaturan: Perusahaan · Booking & Pembayaran (aturan hold, penutupan penjualan, ambang sisa kursi, maksimal pax, DP dan pelunasan default untuk paket baru, rekening fiktif) · Invoice (prefiks dengan pratinjau nomor berikutnya, catatan kaki) · Data Demo (umur dan versi data, ukuran penyimpanan, reset, toggle jaringan lambat dan gagal simpan, ringkasan data dan cek invarian)
+- ☑ 149 test (8 baru: konten, artikel, testimoni, tim, pengaturan, panduan demo); `next build` 97 halaman
+- ☑ Diverifikasi di Chrome headless: alur di atas, artikel baru dari draf hingga tampil publik, izin "verifikasi pembayaran" diberikan ke peran Content lalu persona Content bisa memverifikasi, simulasi gagal simpan memunculkan pesan error, banner data lama setelah tanggal seed dimundurkan; 1440 dan 390 px tanpa scroll horizontal dan tanpa error konsol
+
+**Catatan untuk Phase 6**
+- Interaksi #18 (edit konten website) dan #20 (reset data) kini lengkap di UI
 
 ## Phase 6 — QA & polish
 
@@ -154,7 +162,7 @@ Status: ☑ selesai · ☐ belum. Setiap phase diakhiri dengan `npm run typechec
 | 17 | Konversi inquiry ke booking | detail inquiry | 3 |
 | 18 | Edit konten website | `/dashboard/content` | 5 |
 | 19 | Statistik dashboard ikut berubah | overview, laporan | 3–4 |
-| 20 | Reset data demo | pengaturan, `/demo`, panel demo | 1 (logika) · 5 (UI) |
+| 20 | Reset data demo | pengaturan, `/demo`, panel demo, banner data lama | 1 (logika) · 5 (UI) |
 
 ## Kriteria penerimaan (requirement §14)
 

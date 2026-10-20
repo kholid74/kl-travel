@@ -62,7 +62,8 @@ export const packageFormSchema = z
 
 export type PackageFormValues = z.input<typeof packageFormSchema>
 
-export function emptyPackageForm(destinationId = ""): PackageFormValues {
+/** Blank editor; payment terms start from the company defaults in Pengaturan. */
+export function emptyPackageForm(destinationId = "", terms = { depositPercent: 30, balanceDueDaysBefore: 14 }): PackageFormValues {
   return {
     title: "",
     slug: "",
@@ -89,8 +90,8 @@ export function emptyPackageForm(destinationId = ""): PackageFormValues {
     groupMax: 12,
     pricePerPax: 0,
     tiers: [{ minPax: 2, maxPax: 4, pricePerPax: 0 }],
-    depositPercent: 30,
-    balanceDueDaysBefore: 14,
+    depositPercent: terms.depositPercent,
+    balanceDueDaysBefore: terms.balanceDueDaysBefore,
     cancellationPolicy: DEFAULT_CANCELLATION_POLICY.map((t) => ({ ...t })),
     terms: [],
     faqs: [],

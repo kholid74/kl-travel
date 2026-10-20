@@ -100,6 +100,14 @@ Catatan Phase 4:
 - Warna grafik divalidasi dengan validator skill `dataviz` terhadap permukaan kartu `#ffffff`. Warna brand (teal, navy, pasir) gagal ambang chroma 0,10 pada ukuran grafik, jadi data memakai palet referensi yang lolos semua cek (`components/dashboard/charts/chart-theme.ts`): kategori biru/oranye/aqua, ramp ordinal biru untuk funnel, skala status untuk umur tagihan. Elemen kerangka (grid, teks sumbu) tetap memakai token dashboard. Setiap grafik punya ringkasan teks dan tabel alternatif (`ChartFrame`). Grafik tren di Overview yang sebelumnya memakai dua sumbu-Y diubah menjadi satu sumbu.
 - `next build` dan `next dev` yang berjalan bersamaan pada direktori yang sama membuat worker dev server crash (modul usang, redirect berulang). Hentikan dev server sebelum build.
 
+Catatan Phase 5:
+
+- Service baru: `content-service` (bagian Site Content, artikel, testimoni), `team-service` (undang, peran, status, izin per peran), `settings-service`. Izin peran bisa diubah kecuali Owner; karena `requirePermission()` membaca peran di dalam setiap transaksi, perubahan langsung berlaku tanpa memuat ulang.
+- Panduan demo (`demoJourney()` di `services/demo-service.ts`) dihitung, bukan disimpan sebagai centang: langkah booking, verifikasi, dan pembayaran dibaca dari data; langkah yang tidak meninggalkan jejak (membuka paket, dashboard, keberangkatan, laporan) memakai waktu kunjungan terakhir di `ui-store` (`journeyVisits`). Kunjungan yang lebih tua dari `meta.seededAt` diabaikan, sehingga reset otomatis mengulang panduan. `JourneyTracker` menunggu rehidrasi `ui-store` sebelum mencatat agar tidak tertimpa nilai tersimpan.
+- Toggle "Jaringan lambat" dan "Gagalkan penyimpanan berikutnya" (`services/runtime.ts`) kini bisa diamati lewat `useSyncExternalStore`, karena toggle gagal-simpan mati sendiri setelah satu perintah.
+- Pemilih satu foto (`PhotoField`) membuka katalog di dialog. Tombolnya punya nama aksesibel sendiri ("Pilih foto sampul artikel"); menautkannya ke label field lewat `id` membuat namanya tertimpa label.
+- Next.js menolak dua `next dev` pada direktori yang sama; bila sudah ada dev server lain (misalnya di port 3000), pakai server itu.
+
 ## 4. Lapisan aplikasi
 
 ```text
