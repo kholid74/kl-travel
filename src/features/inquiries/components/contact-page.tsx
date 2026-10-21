@@ -92,12 +92,12 @@ function ContactPage({ initialContent, initialCatalog, initialPackageId }: Props
         </p>
         <dl className="mt-10 divide-y divide-border border-y border-border">
           {info.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex gap-4 py-4">
-              <Icon className="mt-0.5 size-5 shrink-0 text-lagoon-700" strokeWidth={1.75} aria-hidden="true" />
-              <div>
-                <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</dt>
-                <dd className="mt-0.5 text-sm">{value}</dd>
-              </div>
+            <div key={label} className="py-4">
+              <dt className="flex items-center gap-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                <Icon className="size-5 shrink-0 text-lagoon-700" strokeWidth={1.75} aria-hidden="true" />
+                {label}
+              </dt>
+              <dd className="mt-0.5 pl-9 text-sm">{value}</dd>
             </div>
           ))}
         </dl>

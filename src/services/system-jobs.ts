@@ -26,6 +26,9 @@ export function findSystemWork(db: DemoDatabase, now: Timestamp): SystemWork {
     if (booking.status !== "confirmed") continue
     const departure = db.departures[booking.departureId]
     if (!departure || today <= departure.endDate) continue
+    // Same rule as completing by hand: the trip is closed only once operations finished
+    // its checklist (invariant 13). Until then the booking stays confirmed.
+    if (!idx.checklistByDeparture.get(departure.id)?.items.every((item) => item.done)) continue
     const fin = bookingFinancials({
       booking,
       invoice: idx.invoiceByBooking.get(booking.id),

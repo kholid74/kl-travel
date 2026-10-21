@@ -16,7 +16,11 @@ export function ManifestTable({ rows, ageOn, variant = "screen" }: { rows: Manif
   const th = cn("py-2 font-medium", print ? "pr-2" : "px-3 first:pl-5 last:pr-5")
   const cell = print ? "py-1.5 pr-2 align-top" : "px-3 py-2.5 align-top first:pl-5 last:pr-5"
   return (
-    <div className={cn(!print && "overflow-x-auto")}>
+    <div
+      className={cn("overflow-x-auto", print && "print:overflow-visible")}
+      // On a phone the A4 preview scrolls sideways; keyboard users need to reach it too.
+      {...(print && { tabIndex: 0, role: "region", "aria-label": "Tabel manifest peserta" })}
+    >
       <table className={cn("w-full", print ? "text-[10.5px]" : "text-table")}>
         <thead>
           <tr className={cn("border-b border-line text-left text-xs text-text-muted", !print && "bg-canvas/70")}>

@@ -107,7 +107,7 @@ export function CostingPage() {
       />
 
       <div className="mb-6 flex flex-wrap items-end gap-3">
-        <div className="grid w-full gap-1.5 sm:w-96">
+        <div className="grid w-full min-w-0 gap-1.5 sm:w-96">
           <span className="text-xs font-medium text-text-muted" id="sumber-label">
             Hitung untuk
           </span>
@@ -118,7 +118,7 @@ export function CostingPage() {
               setQuery(kind === "dep" ? { departure: id, package: null } : { package: id, departure: null })
             }}
           >
-            <SelectTrigger aria-labelledby="sumber-label" className="w-full bg-card">
+            <SelectTrigger aria-labelledby="sumber-label" className="w-full min-w-0 bg-card *:data-[slot=select-value]:block *:data-[slot=select-value]:truncate">
               <SelectValue placeholder="Pilih keberangkatan atau paket" />
             </SelectTrigger>
             <SelectContent>

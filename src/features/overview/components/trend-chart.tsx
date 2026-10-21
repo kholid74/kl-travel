@@ -15,7 +15,7 @@ export default function TrendChart({ points }: { points: TrendPoint[] }) {
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+        <BarChart accessibilityLayer={false} data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
           <CartesianGrid vertical={false} stroke={CHART.grid} />
           <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: CHART.grid }} tick={AXIS_TICK} interval="preserveStartEnd" minTickGap={16} />
           <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={AXIS_TICK} width={36} />

@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils"
 export function StepProgress({ steps, current, className }: { steps: string[]; current: number; className?: string }) {
   return (
     <nav aria-label="Langkah" className={className}>
-      <p className="mb-3 text-sm text-muted-foreground md:hidden">
+      <p className="mb-3 text-sm text-muted-foreground lg:hidden">
         Langkah {current + 1} dari {steps.length}: <span className="font-semibold text-foreground">{steps[current]}</span>
       </p>
-      <ol className="hidden items-center gap-3 md:flex">
+      <ol className="hidden flex-wrap items-center gap-x-3 gap-y-2 lg:flex">
         {steps.map((step, index) => {
           const done = index < current
           const active = index === current

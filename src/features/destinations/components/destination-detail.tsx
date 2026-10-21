@@ -93,12 +93,12 @@ export function DestinationDetail({ slug, initialCatalog, initialContent }: { sl
         <aside className="lg:col-span-5">
           <dl className="divide-y divide-border border-y border-border">
             {facts.map(({ icon: Icon, label, value }) => (
-              <div key={label} className="flex gap-4 py-5">
-                <Icon className="mt-0.5 size-5 shrink-0 text-lagoon-700" strokeWidth={1.75} aria-hidden="true" />
-                <div>
-                  <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</dt>
-                  <dd className="mt-1 text-sm leading-relaxed">{value}</dd>
-                </div>
+              <div key={label} className="py-5">
+                <dt className="flex items-center gap-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  <Icon className="size-5 shrink-0 text-lagoon-700" strokeWidth={1.75} aria-hidden="true" />
+                  {label}
+                </dt>
+                <dd className="mt-1 pl-9 text-sm leading-relaxed">{value}</dd>
               </div>
             ))}
           </dl>

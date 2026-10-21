@@ -38,7 +38,7 @@ export function ColumnChart({ data, categoryKey, series, format, height = 256 }:
   return (
     <div className="w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
+        <BarChart accessibilityLayer={false} data={data} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
           <CartesianGrid vertical={false} stroke={CHART.grid} />
           <XAxis dataKey={categoryKey} tickLine={false} axisLine={{ stroke: CHART.grid }} tick={AXIS_TICK} interval="preserveStartEnd" minTickGap={12} />
           <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={AXIS_TICK} tickFormatter={(v: number) => format(v)} width={44} />
@@ -94,7 +94,7 @@ export function HBarChart({
   return (
     <div ref={ref} className="w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: labelKey ? 72 : 16, bottom: 0, left: 0 }} barCategoryGap={stacked || series.length === 1 ? 6 : 8} barGap={2}>
+        <BarChart accessibilityLayer={false} data={data} layout="vertical" margin={{ top: 0, right: labelKey ? 72 : 16, bottom: 0, left: 0 }} barCategoryGap={stacked || series.length === 1 ? 6 : 8} barGap={2}>
           <CartesianGrid horizontal={false} stroke={CHART.grid} />
           <XAxis type="number" tickLine={false} axisLine={false} tick={AXIS_TICK} tickFormatter={(v: number) => format(v)} />
           <YAxis

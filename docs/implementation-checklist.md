@@ -128,16 +128,26 @@ Status: ☑ selesai · ☐ belum. Setiap phase diakhiri dengan `npm run typechec
 **Catatan untuk Phase 6**
 - Interaksi #18 (edit konten website) dan #20 (reset data) kini lengkap di UI
 
-## Phase 6 — QA & polish
+## Phase 6 — QA & polish ☑
 
-- ☐ Jalankan ke-20 interaksi di bawah secara manual, di desktop dan mobile
-- ☐ Review responsif (360, 768, 1024, 1440 px) publik dan dashboard
-- ☐ Aksesibilitas: navigasi keyboard penuh, focus terlihat, label form, dialog, kontras, `prefers-reduced-motion`
-- ☐ Konsistensi data: `validateDatabase()` setelah skenario demo panjang
-- ☐ Konsol bersih (tanpa error dan peringatan hydration) di `next build && next start`
-- ☐ Performa: LCP hero, ukuran bundle per route, gambar
-- ☐ Penyempurnaan visual
-- ☐ README (setup, deploy Vercel), panduan demo, checklist fitur, keterbatasan, rekomendasi integrasi backend
+- ☑ Ke-20 interaksi dijalankan berurutan dalam satu sesi di build produksi (`next build && next start`), di 1440 px dan 390 px: semuanya berhasil, konsol bersih
+- ☑ Review responsif 50 route (publik, dashboard, cetak, 404) di 360, 768, 1024, 1440 px: tanpa scroll horizontal. Elemen lebar yang tersisa (kanban, tabel lebar) berada di kontainer scroll sendiri
+- ☑ Aksesibilitas: axe-core 4.11 (WCAG 2.1 A/AA) tanpa pelanggaran di 1440 dan 390 px; Tab di halaman utama publik dan dashboard selalu menunjukkan fokus dan diawali "Lewati ke konten"; dialog mengunci fokus dan mengembalikannya ke tombol pembuka; `prefers-reduced-motion` mematikan animasi dan transisi
+- ☑ Konsistensi data: test skenario panjang (400 aksi acak berbobot, ±6 minggu waktu simulasi, System Job di sela setiap aksi) dengan `validateDatabase()` setelah setiap langkah
+- ☑ Konsol bersih di `next start`: hanya 404 yang memang diharapkan di halaman tidak ditemukan
+- ☑ Performa (ponsel, CPU 4× lebih lambat, 4G lambat): LCP 1,3–1,9 dtk di halaman publik, LCP desktop ≤ 0,6 dtk; JavaScript awal halaman publik ±340 KB terkompresi; TBT beranda ±390–540 ms (lihat catatan)
+- ☑ README: setup, panduan demo, fitur, data demo, keterbatasan, rekomendasi integrasi backend, deploy Vercel
+
+**Bug yang ditemukan dan diperbaiki di Phase 6**
+- System Job menandai booking Selesai tanpa mengecek checklist operasional (melanggar invarian 13). Ditemukan oleh test skenario panjang
+- Dialog dan sheet yang dibuka dari state mengembalikan fokus ke `<body>` saat ditutup, karena Radix hanya mengembalikan fokus ke `*Trigger`. Diperbaiki di komponen dasar (`useReturnFocus`)
+- Kartu daftar mobile di dashboard (Paket, Booking, Keberangkatan) melebar mengikuti judul panjang di 360 px; langkah Custom Trip, gambar artikel, dan pilihan "Hitung untuk" di HPP meluber di 768 px atau 360 px
+- `<dl>` tidak valid di detail destinasi dan Kontak; kontras kredit foto di artikel 3,39:1; grafik recharts bisa difokus padahal disembunyikan dari pembaca layar; ring fokus kartu paket dan artikel terlalu samar
+- 404 di bawah `/dashboard` kini tampil di dalam shell dashboard
+
+**Catatan**
+- TBT di atas target "baik" Lighthouse (200 ms) pada CPU 4× lebih lambat. Lapisan data murah (membangun seed ±6,5 ms di Node); biaya terbesar ada di hidrasi React halaman yang kaya komponen. Untuk produksi: seed tidak lagi dibangun di browser (data dari server) dan bagian bawah beranda bisa dirender tanpa island
+- Deploy preview ke Vercel butuh akun Vercel pemilik repository; langkahnya ada di README
 
 ## Interaksi wajib (requirement §9)
 

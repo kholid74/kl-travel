@@ -38,7 +38,7 @@ function Block({ block }: { block: ArticleBlock }) {
       )
     case "image":
       return (
-        <figure className="my-4 md:-mx-12">
+        <figure className="my-4 lg:-mx-12">
           <div className="relative aspect-[3/2] overflow-hidden rounded-[2px] bg-muted">
             <SmartImage mediaId={block.mediaId} fill sizes="(min-width: 768px) 800px, 100vw" />
           </div>

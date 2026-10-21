@@ -19,7 +19,7 @@ export function RevenueCostChart({ fixed, perPax, price, max, current, breakEven
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 16, right: 16, bottom: 4, left: 4 }}>
+        <LineChart accessibilityLayer={false} data={data} margin={{ top: 16, right: 16, bottom: 4, left: 4 }}>
           <CartesianGrid vertical={false} stroke={CHART.grid} />
           <XAxis dataKey="n" type="number" domain={[1, data.length]} allowDecimals={false} tickLine={false} axisLine={{ stroke: CHART.grid }} tick={AXIS_TICK} label={{ value: "peserta", position: "insideBottomRight", offset: -2, fontSize: 11, fill: CHART.tick }} />
           <YAxis tickLine={false} axisLine={false} tick={AXIS_TICK} tickFormatter={compact} width={48} />
@@ -48,7 +48,7 @@ export function CostBreakdownChart({ rows }: { rows: { label: string; amount: nu
   return (
     <div className="w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 64, bottom: 0, left: 0 }} barCategoryGap={8}>
+        <BarChart accessibilityLayer={false} data={rows} layout="vertical" margin={{ top: 0, right: 64, bottom: 0, left: 0 }} barCategoryGap={8}>
           <XAxis type="number" hide />
           <YAxis type="category" dataKey="label" tickLine={false} axisLine={false} tick={AXIS_TICK} width={128} interval={0} />
           <Tooltip {...TOOLTIP_STYLE} cursor={{ fill: CHART.cursor }} formatter={(value) => [formatIDR(Number(value)), "Biaya"]} />

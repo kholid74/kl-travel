@@ -47,7 +47,7 @@ export function PackageCard({
           {destinationName} · {formatDuration(pkg.durationDays, pkg.durationNights)}
         </p>
         <h3 className={cn("mt-1.5 font-semibold text-balance text-ocean-900", row ? "text-lg leading-snug" : "text-lg leading-snug")}>
-          <Link href={`/paket/${pkg.slug}`} className="outline-none after:absolute after:inset-0 focus-visible:underline">
+          <Link href={`/paket/${pkg.slug}`} className="outline-none after:absolute after:-inset-1 after:rounded-[6px] focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring">
             {pkg.title}
           </Link>
         </h3>

@@ -1,7 +1,10 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Logo } from "@/components/shared/logo"
 import { ThemeScope } from "@/components/theme-scope"
 import { Button } from "@/components/ui/button"
+
+export const metadata: Metadata = { title: "Halaman tidak ditemukan" }
 
 export default function NotFound() {
   return (

@@ -152,11 +152,11 @@ export function DataTable<T>({
         </div>
       </div>
 
-      <ul className="grid gap-3 md:hidden" aria-label={caption}>
+      <ul className="grid grid-cols-1 gap-3 md:hidden" aria-label={caption}>
         {visible.map((row) => {
           const href = getRowHref?.(row)
           return (
-            <li key={getRowKey(row)} className="relative rounded-lg border border-line bg-card p-4 shadow-xs">
+            <li key={getRowKey(row)} className="relative min-w-0 rounded-lg border border-line bg-card p-4 shadow-xs">
               {renderCard(row)}
               {href && (
                 <Link href={href} className="absolute inset-0 rounded-lg focus-visible:ring-2 focus-visible:ring-ring" aria-label="Buka detail">

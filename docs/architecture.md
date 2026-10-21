@@ -108,6 +108,14 @@ Catatan Phase 5:
 - Pemilih satu foto (`PhotoField`) membuka katalog di dialog. Tombolnya punya nama aksesibel sendiri ("Pilih foto sampul artikel"); menautkannya ke label field lewat `id` membuat namanya tertimpa label.
 - Next.js menolak dua `next dev` pada direktori yang sama; bila sudah ada dev server lain (misalnya di port 3000), pakai server itu.
 
+Catatan Phase 6:
+
+- `components/ui/return-focus.ts` dipakai `DialogContent` dan `SheetContent`: elemen yang terfokus saat dialog dibuka dicatat di `onOpenAutoFocus` dan diberi fokus lagi di `onCloseAutoFocus`. Tanpa ini, dialog terkontrol (dibuka dari state, tanpa `DialogTrigger`) menjatuhkan fokus ke `<body>`.
+- `SelectTrigger` dasar kini `min-w-0` dan memotong nilainya, sehingga nilai panjang tidak melebarkan form di layar sempit. Daftar kartu mobile `DataTable` memakai `grid-cols-1` agar kartu tidak melebar mengikuti teks yang di-*truncate*.
+- Grafik recharts memakai `accessibilityLayer={false}`: grafik disembunyikan dari pembaca layar (`aria-hidden`), dan ringkasan teks serta tabel alternatif yang membawa datanya.
+- 404 di bawah `/dashboard` lewat `[...missing]/page.tsx` yang memanggil `notFound()`, sehingga `dashboard/not-found.tsx` tampil di dalam shell dashboard.
+- QA di build produksi memakai skrip Playwright (di luar repository): sweep overflow 4 lebar layar, axe-core, tab-through keyboard, ke-20 interaksi, dan pengukuran LCP/TBT dengan throttling CPU dan jaringan.
+
 ## 4. Lapisan aplikasi
 
 ```text
@@ -208,7 +216,7 @@ Event `storage` dari tab lain memuat ulang snapshot dan menaikkan versinya. Kare
 `runSystemJobs(now)` berjalan saat hydration dan setiap 60 detik selama tab terlihat. Job ini idempoten:
 
 1. Membatalkan booking `pending`/`awaiting_payment` dengan hold kedaluwarsa (`hold_expired`).
-2. Menyelesaikan booking `confirmed` yang departure-nya sudah berakhir dan sudah lunas.
+2. Menyelesaikan booking `confirmed` yang departure-nya sudah berakhir, sudah lunas, dan checklist operasionalnya lengkap (aturan yang sama dengan tombol "Tandai selesai", invarian 13).
 
 Setiap perubahan dicatat sebagai ActivityEvent dengan actor "Sistem".
 

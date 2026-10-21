@@ -24,7 +24,7 @@ export function ArticleCard({
   )
   const title = (size: string) => (
     <h3 className={cn("font-semibold text-balance text-ocean-900", size)}>
-      <Link href={`/jurnal/${article.slug}`} className="outline-none after:absolute after:inset-0 focus-visible:underline">
+      <Link href={`/jurnal/${article.slug}`} className="outline-none after:absolute after:-inset-1 after:rounded-[6px] focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring">
         {article.title}
       </Link>
     </h3>

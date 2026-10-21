@@ -41,7 +41,7 @@ export function PhotoCredit({ mediaId, className }: { mediaId: string; className
       href={asset.credit.sourceUrl}
       target="_blank"
       rel="noreferrer"
-      className={cn("text-[0.6875rem] text-current/70 underline-offset-2 hover:underline", className)}
+      className={cn("text-[0.6875rem] text-current/85 underline-offset-2 hover:underline", className)}
     >
       Foto: {asset.credit.photographer} / Unsplash
     </a>
