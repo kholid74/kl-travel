@@ -19,6 +19,7 @@ import { availabilityLine } from "../availability"
 import { useAvailabilityMap, useBookingSettings, usePackageAvailability, usePublicCatalog } from "../hooks/use-public-catalog"
 import { BookingPanel, MobileBookingBar, paxLimits } from "./booking-panel"
 import { DepartureList } from "./departure-list"
+import { ItineraryDownload } from "./itinerary-download"
 import { PackageGallery } from "./package-gallery"
 import { PackagePolicies } from "./package-policies"
 
@@ -39,13 +40,16 @@ export function PackageDetailFallback(props: DetailProps) {
   return <PackageDetail {...props} preselectCode={null} initialPax={null} />
 }
 
-function SectionTitle({ id, eyebrow, children }: { id: string; eyebrow: string; children: React.ReactNode }) {
+function SectionTitle({ id, eyebrow, children, action }: { id: string; eyebrow: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="mb-8">
-      <p className="eyebrow text-lagoon-700">{eyebrow}</p>
-      <h2 id={id} className="mt-2 font-display text-[2rem] leading-tight text-ocean-900 md:text-[2.375rem]">
-        {children}
-      </h2>
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+      <div>
+        <p className="eyebrow text-lagoon-700">{eyebrow}</p>
+        <h2 id={id} className="mt-2 font-display text-[2rem] leading-tight text-ocean-900 md:text-[2.375rem]">
+          {children}
+        </h2>
+      </div>
+      {action}
     </div>
   )
 }
@@ -86,6 +90,7 @@ function PackageDetail({ slug, initialCatalog, initialSettings, preselectCode, i
   const limits = paxLimits({ pkg, selected, maxPaxPerBooking: settings.maxPaxPerBooking })
   const pax = Math.min(limits.max, Math.max(limits.min, paxChoice ?? limits.min))
   const selection = { pkg, availability, selected, pax, onPaxChange: setPaxChoice, maxPaxPerBooking: settings.maxPaxPerBooking }
+  const itineraryDownload = { pkg, destinationName: destination.name, regionLabel: REGION_LABEL[destination.region], options, selectedId: selected?.departure.id }
 
   const facts = [
     { label: "Durasi", value: formatDuration(pkg.durationDays, pkg.durationNights, "long") },
@@ -130,6 +135,7 @@ function PackageDetail({ slug, initialCatalog, initialSettings, preselectCode, i
           </div>
           <h1 className="mt-4 font-display text-display-lg text-balance text-ocean-900">{pkg.title}</h1>
           <p className="mt-4 text-body-lg text-pretty text-muted-foreground">{pkg.summary}</p>
+          <ItineraryDownload {...itineraryDownload} variant="link" className="mt-5" />
         </header>
       </div>
 
@@ -178,7 +184,7 @@ function PackageDetail({ slug, initialCatalog, initialSettings, preselectCode, i
           </section>
 
           <section aria-labelledby="itinerary" className="scroll-mt-36">
-            <SectionTitle id="itinerary" eyebrow="Itinerary">
+            <SectionTitle id="itinerary" eyebrow="Itinerary" action={<ItineraryDownload {...itineraryDownload} />}>
               {pkg.itinerary.length > 1 ? `${pkg.itinerary.length} hari, hari demi hari` : "Rencana perjalanan"}
             </SectionTitle>
             <ItineraryTimeline days={pkg.itinerary} />

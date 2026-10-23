@@ -40,7 +40,7 @@ Pakai **Lihat sebagai** (pojok kanan atas dashboard) untuk mencoba peran Sales, 
 ## Fitur
 
 **Website publik**
-- Beranda 12 bagian, daftar paket dengan pencarian, filter, dan urutan; detail paket dengan galeri, itinerary, jadwal, sisa kursi live, kebijakan, dan FAQ
+- Beranda 12 bagian, daftar paket dengan pencarian, filter, dan urutan; detail paket dengan galeri, itinerary (bisa diunduh sebagai PDF A4), jadwal, sisa kursi live, kebijakan, dan FAQ
 - Destinasi, jurnal, Tentang, Kontak, kredit foto, halaman `/demo`
 - Alur Open Trip (4 langkah dengan hold kursi), permintaan Private Trip, Custom Trip (6 langkah), dan form kontak; halaman konfirmasi live dengan konfirmasi pembayaran simulasi
 
@@ -112,6 +112,8 @@ Arsitektur, domain model, dan keputusan desain: [`docs/architecture.md`](docs/ar
 ```bash
 node scripts/media/fetch-media.mjs
 ```
+
+Font PDF itinerary (Plus Jakarta Sans dan Instrument Serif) dibundel di `public/fonts/pdf` bersama lisensi SIL Open Font License-nya.
 
 ## Deploy ke Vercel
 

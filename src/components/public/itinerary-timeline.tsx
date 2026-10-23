@@ -1,7 +1,7 @@
 import { BedDouble, Utensils } from "lucide-react"
 import type { ItineraryDay } from "@/domain/entities"
 
-function mealsText(meals: ItineraryDay["meals"]): string | null {
+export function mealsText(meals: ItineraryDay["meals"]): string | null {
   const list = [meals.breakfast && "sarapan", meals.lunch && "makan siang", meals.dinner && "makan malam"].filter(Boolean) as string[]
   if (list.length === 0) return null
   const text = list.length === 1 ? list[0] : `${list.slice(0, -1).join(", ")} & ${list.at(-1)}`

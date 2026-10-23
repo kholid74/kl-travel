@@ -67,6 +67,7 @@ flowchart LR
 | `react-day-picker` | Kalender pemilih tanggal (komponen Calendar shadcn) | Pemilihan tanggal Private/Custom Trip dan form dashboard |
 | `sonner` | Toast | Standar shadcn |
 | `@dnd-kit/core` | Drag-and-drop kanban inquiry | Mendukung keyboard dan sentuhan; HTML5 DnD tidak |
+| `@react-pdf/renderer` | PDF itinerary yang diunduh dari detail paket | Teks PDF asli (bisa dicari dan disalin), dibuat di browser tanpa server; dimuat dengan dynamic import saat tombol diklik |
 | `vitest` (dev) | Unit test aturan domain dan invarian seed | Kebenaran angka keuangan dan kursi wajib teruji |
 
 Tidak dipakai, dengan sengaja: TanStack Table (tabel ≤ 100 baris cukup dengan komponen sendiri), TanStack Query (belum ada server; seam disiapkan di hook), immer, library i18n (satu bahasa), library ID atau zona waktu (WIB = UTC+7 tetap).
@@ -115,6 +116,12 @@ Catatan Phase 6:
 - Grafik recharts memakai `accessibilityLayer={false}`: grafik disembunyikan dari pembaca layar (`aria-hidden`), dan ringkasan teks serta tabel alternatif yang membawa datanya.
 - 404 di bawah `/dashboard` lewat `[...missing]/page.tsx` yang memanggil `notFound()`, sehingga `dashboard/not-found.tsx` tampil di dalam shell dashboard.
 - QA di build produksi memakai skrip Playwright (di luar repository): sweep overflow 4 lebar layar, axe-core, tab-through keyboard, ke-20 interaksi, dan pengukuran LCP/TBT dengan throttling CPU dan jaringan.
+
+Catatan unduh itinerary (PDF):
+
+- `@react-pdf/renderer` 4.9.0. `ItineraryDownload` mengimpor `features/packages/itinerary-pdf.tsx` secara dinamis saat diklik, sehingga library PDF tidak masuk JavaScript awal halaman. Dokumen dibuat dari paket dan keberangkatan di database browser, jadi paket buatan dashboard dan sisa kursi terbaru ikut tercermin. Foto sampul dipotong dan diperkecil lewat canvas (1400×525 JPEG) agar file tetap ringan.
+- Font TTF di `public/fonts/pdf` didaftarkan dari origin halaman. Pemenggalan kata dimatikan (aturan bahasa Inggris memotong kata Indonesia), begitu juga ligatur `fi`/`fl`, karena glyph ligatur hanya dipetakan balik ke "f" sehingga teks yang disalin terbaca "konfrmasi".
+- `lineHeight` dipasang di `View` pembungkus, bukan di `Page`: di `Page`, footer nomor halaman (`Text` dengan prop `render`) terlempar ke luar halaman saat layout ulang. Judul "Rencana perjalanan" dikelompokkan dengan hari 1 dalam `View wrap={false}` karena `minPresenceAhead` tidak mencegahnya tertinggal sendirian di bawah halaman.
 
 ## 4. Lapisan aplikasi
 
