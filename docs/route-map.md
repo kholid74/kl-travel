@@ -106,4 +106,4 @@ Setiap entitas yang disebut di halaman lain adalah tautan:
 
 ## 5. Halaman sistem
 
-`not-found.tsx` dan `error.tsx` terpisah untuk grup publik dan dashboard. `robots.ts` menolak semua crawler. Tidak ada `sitemap.ts`, karena situs demo tidak untuk diindeks.
+`not-found.tsx` dan `error.tsx` terpisah untuk grup publik dan dashboard. `robots.ts` mengizinkan crawl agar `noindex` (metadata dan header `X-Robots-Tag`) terbaca. Tidak ada `sitemap.ts`, karena situs demo tidak untuk diindeks.

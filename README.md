@@ -125,4 +125,6 @@ Tidak butuh environment variable atau layanan tambahan.
 
 Alternatif lewat CLI: `npx vercel` untuk preview, `npx vercel --prod` untuk produksi.
 
-Situs memakai `noindex` dan `robots.txt` menolak semua crawler karena brandnya fiktif. Data demo tetap hidup di browser setiap pengunjung, jadi deployment tidak berbagi data antar-pengunjung.
+Demo: https://nusavista-journey.demo.kalsara.id (alamat `nusavista-journey.vercel.app` dialihkan ke sana).
+
+Brandnya fiktif, jadi seluruh situs `noindex, nofollow` lewat metadata dan header `X-Robots-Tag`. `robots.txt` sengaja mengizinkan crawl agar `noindex` terbaca; blokir di `robots.txt` justru membuat URL yang ditautkan dari luar bisa terindeks tanpa isi. Data demo tetap hidup di browser setiap pengunjung, jadi deployment tidak berbagi data antar-pengunjung.

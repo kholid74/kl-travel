@@ -298,4 +298,5 @@ Setiap halaman data memiliki empat state yang dirancang: **loading** (skeleton s
 
 - Vercel, preset Next.js, tanpa environment variable. `next build` harus lolos type-check dan lint.
 - Semua data berada di browser, sehingga setiap pengunjung mendapat salinan demo sendiri. Tidak ada state server yang perlu dibersihkan.
-- `robots.txt` menolak semua crawler dan metadata `robots: noindex`.
+- `noindex, nofollow` lewat metadata `robots` dan header `X-Robots-Tag` di semua respons (termasuk gambar dan font). `robots.txt` sengaja mengizinkan crawl: `noindex` hanya terbaca di halaman yang boleh diambil crawler, sedangkan URL yang diblokir `robots.txt` tetap bisa terindeks bila ditautkan dari situs lain.
+- Domain demo `nusavista-journey.demo.kalsara.id`; `nusavista-journey.vercel.app` dialihkan ke sana (308) lewat `redirects()` di `next.config.ts`.
